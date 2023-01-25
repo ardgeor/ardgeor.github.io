@@ -1,0 +1,743 @@
+<!doctype html>
+<!--
+  Minimal Mistakes Jekyll Theme 4.15.1 by Michael Rose
+  Copyright 2013-2019 Michael Rose - mademistakes.com | @mmistakes
+  Free for personal and commercial use under the MIT license
+  https://github.com/mmistakes/minimal-mistakes/blob/master/LICENSE
+-->
+<html lang="en" class="no-js">
+  <head>
+    <meta charset="utf-8">
+
+<!-- begin _includes/seo.html --><title>            Why you should protect the integrity of the native libraries: stealing the PIN code of a mobile application through the screen, without triggering the protections and without reverse engineering. - Ardgeor’s site      A hacking corner      </title>
+<meta name="description" content="Mobile applications that handle sensitive data are often well protected. However, specific security holes are frequently disregarded. For instance, neglecting the protection of a native library integrity opens the door to code injection, eventually leading to the leak of secrets.">
+
+
+
+<meta property="og:type" content="article">
+<meta property="og:locale" content="en_US">
+<meta property="og:site_name" content="Ardgeor's site | A hacking corner">
+<meta property="og:title" content="Why you should protect the integrity of the native libraries: stealing the PIN code of a mobile application through the screen, without triggering the protections and without reverse engineering.">
+<meta property="og:url" content="http://0.0.0.0:4000/abusing-shared-object-in-android-applications/">
+
+
+  <meta property="og:description" content="Mobile applications that handle sensitive data are often well protected. However, specific security holes are frequently disregarded. For instance, neglecting the protection of a native library integrity opens the door to code injection, eventually leading to the leak of secrets.">
+
+
+
+
+
+
+
+  <meta property="article:published_time" content="2023-01-16T00:00:00+00:00">
+
+
+
+
+
+  
+
+  
+
+
+<link rel="canonical" href="http://0.0.0.0:4000/abusing-shared-object-in-android-applications/">
+
+
+
+
+
+
+
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Person",
+      "name": "Ardgeor",
+      "url": "http://0.0.0.0:4000",
+      "sameAs": null
+    }
+  </script>
+
+
+
+
+
+
+
+<!-- end _includes/seo.html -->
+
+
+<link href="/feed.xml" type="application/atom+xml" rel="alternate" title="Ardgeor's site | A hacking corner Feed">
+
+<!-- https://t.co/dKP3o1e -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script>
+  document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
+</script>
+
+<!-- For all browsers -->
+<link rel="stylesheet" href="/assets/css/main.css">
+
+<!--[if IE ]>
+  <style>
+    /* old IE unsupported flexbox fixes */
+    .greedy-nav .site-title {
+      padding-right: 3em;
+    }
+    .greedy-nav button {
+      position: absolute;
+      top: 0;
+      right: 0;
+      height: 100%;
+    }
+  </style>
+<![endif]-->
+
+
+
+    <!-- start custom head snippets -->
+
+<!-- insert favicons. use https://realfavicongenerator.net/ -->
+
+<!-- end custom head snippets -->
+
+  </head>
+
+  <body class="layout--single wide">
+
+    <!--[if lt IE 9]>
+<div class="notice--danger align-center" style="margin: 0;">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience.</div>
+<![endif]-->
+
+    
+
+<div class="masthead">
+  <div class="masthead__inner-wrap">
+    <div class="masthead__menu">
+      <nav id="site-nav" class="greedy-nav">
+                
+        <ul class="visible-links"><li class="masthead__menu-item">
+              <a href="/" >Home</a>
+            </li><li class="masthead__menu-item">
+              <a href="/year-archive/" >Articles</a>
+            </li><li class="masthead__menu-item">
+              <a href="/categories/" >Categories</a>
+            </li><li class="masthead__menu-item">
+              <a href="/tags/" >Tags</a>
+            </li><li class="masthead__menu-item">
+              <a href="/search/" >Search</a>
+            </li></ul>
+        
+        <button class="greedy-nav__toggle hidden" type="button">
+          <span class="visually-hidden">Toggle menu</span>
+          <div class="navicon"></div>
+        </button>
+        <ul class="hidden-links hidden"></ul>
+      </nav>
+    </div>
+  </div>
+</div>
+    
+
+    <div class="initial-content">
+      
+
+
+  
+    
+
+
+
+<nav class="breadcrumbs">
+  <ol itemscope itemtype="https://schema.org/BreadcrumbList">
+    
+    
+    
+      
+        <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+          <a href="http://0.0.0.0:4000/" itemprop="item"><span itemprop="name">Home</span></a>
+          <meta itemprop="position" content="1" />
+        </li>
+        <span class="sep">/</span>
+      
+      
+        <li class="current">Why you should protect the integrity of the native libraries: stealing the PIN code of a mobile application through the screen, without triggering the protections and without reverse engineering.</li>
+      
+    
+  </ol>
+</nav>
+
+  
+
+
+<div id="main" role="main">
+  
+  <div class="sidebar sticky">
+  
+
+
+<div itemscope itemtype="https://schema.org/Person">
+
+  
+    <div class="author__avatar">
+      
+
+      
+        <img src="/assets/images/avatar.png" alt="Ardgeor" itemprop="image">
+      
+    </div>
+  
+
+  <div class="author__content">
+    
+      <h3 class="author__name" itemprop="name">Ardgeor</h3>
+    
+    
+      <p class="author__bio" itemprop="description">
+        Security Engineer
+      </p>
+    
+  </div>
+
+  <div class="author__urls-wrapper">
+    <button class="btn btn--inverse">Follow</button>
+    <ul class="author__urls social-icons">
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+        <li>
+          <a href="https://github.com/ardgeor" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-github" aria-hidden="true"></i> GitHub
+          </a>
+        </li>
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      <!--
+  <li>
+    <a href="http://link-to-whatever-social-network.com/user/" itemprop="sameAs" rel="nofollow noopener noreferrer">
+      <i class="fas fa-fw" aria-hidden="true"></i> Custom Social Profile Link
+    </a>
+  </li>
+-->
+    </ul>
+  </div>
+</div>
+
+  
+  </div>
+
+
+  <article class="page" itemscope itemtype="https://schema.org/CreativeWork">
+    <meta itemprop="headline" content="Why you should protect the integrity of the native libraries: stealing the PIN code of a mobile application through the screen, without triggering the protections and without reverse engineering.">
+    <meta itemprop="description" content="Mobile applications that handle sensitive data are often well protected. However, specific security holes are frequently disregarded. For instance, neglecting the protection of a native library integrity opens the door to code injection, eventually leading to the leak of secrets.">
+    <meta itemprop="datePublished" content="January 16, 2023">
+    
+
+    <div class="page__inner-wrap">
+      
+        <header>
+          <h1 id="page-title" class="page__title" itemprop="headline">Why you should protect the integrity of the native libraries: stealing the PIN code of a mobile application through the screen, without triggering the protections and without reverse engineering.
+</h1>
+          
+        </header>
+      
+
+      <section class="page__content" itemprop="text">
+        
+        <p class="page__meta">
+          
+            <i class="fa fa-fw fa-calendar" aria-hidden="true"></i> <time datetime="2023-01-16T00:00:00+00:00">January 16, 2023 </time>&emsp;
+          
+          
+        </p>
+        <!-- <p align="center">
+<img src="/assets/images/antenacasera/portada-antena.jpg">
+</p> -->
+
+<h2 id="introduction">Introduction</h2>
+
+<p>Nowadays, mobile applications handling sensitive information are usually much better protected than a few years ago. 
+Commercial solutions are involved during the build process, providing obfuscation and protections against techniques such as 
+tampering, dynamic instrumentation, debugging, rooting, emulation, etc. These protection techniques have significantly evolved 
+in the last years. Thus, bypassing these mechanisms usually requires advanced reverse engineering skills.</p>
+
+<p>However, there are security holes that are often overlooked, becoming low-hanging fruit that can be aimed by not necessarily
+highly skilled attackers.</p>
+
+<p>An example of how what could be a banking application could be compromised is discussed in this article.</p>
+
+<p>This article is written with the purpose of raising awareness about the importance of taking care of the small details when developping products.
+A huge security infrastructure might become useless if we leave an open window somewhere.</p>
+
+<h2 id="proof-of-concept-poc">Proof of Concept (PoC)</h2>
+
+<h3 id="the-target-application-an-impregnable-bastion">The target application: an impregnable bastion</h3>
+
+<p>For this demonstration, the target will be an application which requires entering a PIN code to authenticate a user.
+The activity than contains the PIN pad is protected against screen captures through the flag <code class="language-plaintext highlighter-rouge">FLAG_SECURE</code>:</p>
+
+<pre><code class="language-Java">
+ window.setFlags(WindowManager.LayoutParams.FLAG_SECURE, 
+      WindowManager.LayoutParams.FLAG_SECURE);
+</code></pre>
+
+<p>The explanation of the flag <code class="language-plaintext highlighter-rouge">FLAG_SECURE</code> from the 
+<a href="https://developer.android.com/reference/android/view/WindowManager.LayoutParams#FLAG_SECURE">Android development site</a>
+is shown below:</p>
+
+<!-- <img src="/assets/images/abusing_shared_object/flag_secure.png" width="1000"> -->
+<p align="left">
+<img src="/assets/images/abusing_shared_object/flag_secure.png" />
+</p>
+
+<p>Thus, when trying to take a screenshot, it is now allowed by the system:</p>
+
+<p align="center">
+<img src="/assets/images/abusing_shared_object/failed_screenshot.png" />
+</p>
+
+<p>Furthermore, the application does not allow to proceed if the developer options are enabled (<a href="https://developer.android.com/studio/command-line/adb">adb</a>).</p>
+
+<p>Let us suppose that this application is protected with state-of-the-art techniques against rooting, hooking, debugging, tampering, etc.</p>
+
+<p>Thus, any attempt to hook or tamper with the APK would eventually trigger a security check, preventing the application from running in normal conditions.</p>
+
+<p>Let us also accept that the application is strongly obfuscated, and trying to understand how the security checks work would entail an arduous process of reverse engineering, which requires high skills.</p>
+
+<h3 id="an-open-window-to-the-fortress">An open window to the fortress</h3>
+
+<p>However, all this defensive effort described above might be in vain, as there is a small hole that leads inside of the fortress: the application has a native library whose integrity is not totally protected: <code class="language-plaintext highlighter-rouge">libvuln.so</code>.</p>
+
+<p align="center">
+<img src="/assets/images/abusing_shared_object/libvuln.so.png" />
+</p>
+
+<h3 id="loading-a-malicious-native-library">Loading a malicious native library</h3>
+
+<p>The fact that <code class="language-plaintext highlighter-rouge">libvuln.so</code> can be modified without being detected, means that we could potentially alter the behaviour of the application. Moreover, the library <code class="language-plaintext highlighter-rouge">libvuln.so</code> is loaded before the PIN pad is used. Hence, any modification we might induce, would be effective at the moment when the PIN pad is being used.</p>
+
+<p>Where to begin? Let us imagine that we have a rogue library, called <code class="language-plaintext highlighter-rouge">librogue.so</code>, which contains some malicious functions that we would like to be executed by the target application. Would it be possible? Well, the first problem to solve is that we need this library to be loaded in memory. In order to achieve this, the library <code class="language-plaintext highlighter-rouge">libvuln.so</code> could be modified to declare an additional library as a dependency and, hence, make it to be loaded. This can be done with a tool called <a href="https://github.com/lief-project/LIEF">LIEF</a>, created by the security engineer <a href="https://www.romainthomas.fr/">Romain Thomas</a>.</p>
+
+<p>As depicted below, LIEF takes as input the library to modify, and the name of the library to add as a dependency. The binary produced as a result, will include the name <code class="language-plaintext highlighter-rouge">librogue.so</code> as a needed library.</p>
+
+<p align="center">
+<img src="/assets/images/abusing_shared_object/lief.png" />
+</p>
+
+<p>The code to produce this is shown below:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">lief</span>
+
+<span class="c1"># (...)
+</span>
+<span class="n">libnative</span> <span class="o">=</span> <span class="n">lief</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="s">"{}/{}"</span><span class="o">.</span><span class="nb">format</span><span class="p">(</span><span class="n">so_input_path</span><span class="p">,</span> <span class="n">so_input</span><span class="p">))</span>
+<span class="n">libnative</span><span class="o">.</span><span class="n">add_library</span><span class="p">(</span><span class="n">so_inject</span><span class="p">)</span> <span class="c1"># Injection!
+</span><span class="n">libnative</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">"{}/{}"</span><span class="o">.</span><span class="nb">format</span><span class="p">(</span><span class="n">so_output_path</span><span class="p">,</span> <span class="n">so_output</span><span class="p">))</span>
+
+</code></pre></div></div>
+
+<p>By inspecting the strings of the binary produced, we can confirm that <code class="language-plaintext highlighter-rouge">librogue.so</code> had been added to the list of libraries to load:</p>
+
+<p align="center">
+<img src="/assets/images/abusing_shared_object/strings_dep_added.png" />
+</p>
+
+<p>In Android, the libraries embedded in an APK are placed within a directory dedicated for the specific application in the path <code class="language-plaintext highlighter-rouge">/data/app</code>. For our case, <code class="language-plaintext highlighter-rouge">libvuln.so</code> is placed in <code class="language-plaintext highlighter-rouge">/data/app/ardgeor.libabuse.poc.targetapp-1/lib/arm64</code>. For our attack, we would simply replace <code class="language-plaintext highlighter-rouge">libvuln.so</code> by the “liefed” version. We would also copy <code class="language-plaintext highlighter-rouge">librogue.so</code> in the same directory.</p>
+
+<p>At this point, there are two point that need to be clarified:</p>
+
+<ol>
+  <li>Of course, we need to be <code class="language-plaintext highlighter-rouge">root</code> in order to write in <code class="language-plaintext highlighter-rouge">/data/app</code>. However, this does not necessarily entail to bypass the root protection, as this action can be carried out when the application is not running. Thus, it would be enough for an attacker to be have the capacity to temporarily elevate privileges.</li>
+  <li>Actually, the native libraries are placed in the directory for the application in <code class="language-plaintext highlighter-rouge">/data/app</code> as long as the flag <code class="language-plaintext highlighter-rouge">android:extractNativeLibs</code> is not set to <code class="language-plaintext highlighter-rouge">false</code> in the Android manifest. However, if we place the modified version of <code class="language-plaintext highlighter-rouge">libvuln.so</code> in this directory, it will be the binary loaded in memory, as that’s the preferred location.</li>
+</ol>
+
+<p align="center">
+<img src="/assets/images/abusing_shared_object/lib_injection.png" />
+</p>
+
+<p>Once the libraries have been placed in <code class="language-plaintext highlighter-rouge">/data/app/ardgeor.libabuse.poc.targetapp-1/lib/arm64</code>, we can launch the application. 
+A message in the log reveals that the library <code class="language-plaintext highlighter-rouge">librogue.so</code> is executing. No disruptive action is observed. At this point, we can inject our own code in the application and get it executed.</p>
+
+<p align="center">
+<img src="/assets/images/abusing_shared_object/librogue_loaded.png" />
+</p>
+
+<h3 id="loading-a-malicious-dex-file">Loading a malicious DEX file</h3>
+
+<p>So, we are already able to execute the code from our own native library. What would we like to do at this point?</p>
+
+<p>Thinking as an attacker about a real scenario, it would be great to disable the flag <code class="language-plaintext highlighter-rouge">FLAG_SECURE</code> on the PIN activity and add functionality to take screenshots or record the screen, as well as support to send information to a server controlled by the attacker. As we plan to make calls at the Java layer, it would be more convenient to write Java code, generate a DEX file and load it from <code class="language-plaintext highlighter-rouge">librogue.so</code>.
+The article <a href="https://erev0s.com/blog/3-ways-for-dynamic-code-loading-in-android/">Three ways for dynamic code loading in Android</a> may serve as inspiration for loading the DEX.</p>
+
+<p>Thus, Java reflection calls were included in <code class="language-plaintext highlighter-rouge">librogue.so</code> to use, through the JNI, the class <code class="language-plaintext highlighter-rouge">DexClassLoader</code> for loading our DEX <code class="language-plaintext highlighter-rouge">rogue.dex</code>. This is shown in the log snippet below:</p>
+
+<p align="center">
+<img src="/assets/images/abusing_shared_object/load_dex.png" />
+</p>
+
+<h3 id="enabling-screen-captures">Enabling screen captures</h3>
+
+<p>Good! Now we can inject code both in the native layer and in the Java layer!</p>
+
+<p>Our goal was to disable <code class="language-plaintext highlighter-rouge">FLAG_SECURE</code> on the PIN activity. 
+A simple approach could be to iteratively recover the current activity and disable the flag. 
+This can be done through reflection calls to specific hidden Android API.
+The result can be observed in the log snippet below:</p>
+
+<p align="center">
+<img src="/assets/images/abusing_shared_object/disable_flag_secure.png" />
+</p>
+
+<p>And now we can capture the screen :)</p>
+
+<p align="center">
+<img src="/assets/images/abusing_shared_object/screenshot.png" />
+</p>
+
+<h3 id="capturing-the-pin">Capturing the PIN</h3>
+
+<p>We have seen how it was possible to disable the flag <code class="language-plaintext highlighter-rouge">FLAG_SECURE</code> and take screenshots or record the screen. 
+At this point there are different possibilities, let us go accross them and analyze each particular case</p>
+
+<h4 id="the-pin-pad-provides-a-visual-feedback-when-a-button-is-pressed">The PIN pad provides a visual feedback when a button is pressed</h4>
+
+<p>The easiest case for the attacker would be when a visual feedback is produced when pressing a button of the PIN pad, i.e. when simply by observing the screen 
+we can know what buttons are pressed. For instance, from the screen shown in the figure below, we can know that the button <code class="language-plaintext highlighter-rouge">2</code> was pressed.</p>
+
+<p align="center">
+<img src="/assets/images/abusing_shared_object/visual_fb_button_pressed.png" />
+</p>
+
+<h4 id="the-pin-pad-does-not-provide-a-visual-feedback-when-a-button-is-pressed">The PIN pad does not provide a visual feedback when a button is pressed</h4>
+
+<p>In the case that no visual effect is produced, such as a shadow or a color change, just being able to observe the screen would not be enough for an attacker to 
+obtain the PIN. 
+An additional capability will be required, related to where the user touched on the screen.</p>
+
+<p>There exists a feature that satisfies this need: the <code class="language-plaintext highlighter-rouge">show_touches</code> option, or “show taps”. This can be enabled through the developer options menu:</p>
+
+<p align="center">
+<img src="/assets/images/abusing_shared_object/show_taps.png" />
+</p>
+
+<p>This option solved the problem, except that we had said that the application did not allow the developer options to be enabled…</p>
+
+<p>But we had also mentioned that this attack needs the ability to temporarily become root. A root privilege allows to activate the 
+<code class="language-plaintext highlighter-rouge">show_touches</code> setting. However, a shell session <strong>without useing ADB</strong> is needed.</p>
+
+<p>Let us think again of a real scenario, let’s imagine an attacker that has remote a shell session on the phone through e.g. using the SSH protocol.
+The attacker must elevate privileges to root, and the privilege obtained must allow to edit the settings. 
+If this is achieved, the following command will activate the <code class="language-plaintext highlighter-rouge">show_touches</code> option:</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code> <span class="se">\#</span>  content insert <span class="nt">--uri</span> content://settings/system <span class="nt">--bind</span> name:s:show_touches <span class="nt">--bind</span> value:i:1
+</code></pre></div></div>
+
+<p>A couple of comments about this:</p>
+<ul>
+  <li>If the phone reboots, the change is persistent, meaning that the <code class="language-plaintext highlighter-rouge">show_touches</code> option will still be active.</li>
+  <li>If the developer options are enabled, and then disabled, <code class="language-plaintext highlighter-rouge">show_touches</code> option will be disabled.</li>
+</ul>
+
+<p>Well, at this point nothing prevents us from capturing the PIN:</p>
+
+<p align="center">
+<img src="/assets/images/abusing_shared_object/capture_touch.png" />
+</p>
+
+<h4 id="further-discussion">Further discussion</h4>
+
+<p>There are more possibilities that could make the attack unviable or even easier. 
+For instance, if the position of the buttons is always the same, we don’t really need to * see* the PIN pad, it is enough to see the taps, and 
+then derive the button that was pressed.</p>
+
+<p>Let us see an example. The screen shown below has been captured. As we can see, the flag <code class="language-plaintext highlighter-rouge">FLAG_SECURE</code> has not be disabled, but the
+<code class="language-plaintext highlighter-rouge">show_touches</code> option has been enabled.</p>
+
+<p align="center">
+<img src="/assets/images/abusing_shared_object/not_visible.png" />
+</p>
+
+<p>If the position of the buttons is static, we can just superimpose a template of the PIN pad on the screen capture, and we get obtain the button that was pressed. 
+Or we can directly guess from the screen capture :)</p>
+
+<p align="center">
+<img src="/assets/images/abusing_shared_object/not_visible_with_template.png" />
+</p>
+
+<p>A more complicated case would be when there is no visual feedback and also the position of the buttons is not predictable. 
+In this case, we would again need both disabling the flag <code class="language-plaintext highlighter-rouge">FLAG_SECURE</code>, in order to see where each button is placed; 
+and also enable the <code class="language-plaintext highlighter-rouge">show_touches</code> option, to obtain visual feedback. Un example is shown below:</p>
+
+<p align="center">
+<img src="/assets/images/abusing_shared_object/unpredictable.png" />
+</p>
+
+<p>Finally, if the application checks the <code class="language-plaintext highlighter-rouge">show_touches</code> option and refuses to execute normally if it is enabled; and there is no visual feedback on the PIN pad; then, in this case, retrieving the PIN from the string is, a priori, not possible.</p>
+
+<p>The relevant cases are summarized in the table below:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th><code class="language-plaintext highlighter-rouge">FLAG_SECURE</code> enabled</th>
+      <th>PIN pad buttons at a fixed position</th>
+      <th>Visual feedback</th>
+      <th><code class="language-plaintext highlighter-rouge">show_touches</code> detected</th>
+      <th>Attack path</th>
+      <th> </th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td>Disable <code class="language-plaintext highlighter-rouge">FLAG_SECURE</code></td>
+      <td>Activate <code class="language-plaintext highlighter-rouge">show_touches</code></td>
+    </tr>
+  </tbody>
+  <tbody>
+    <tr>
+      <td>No</td>
+      <td>X</td>
+      <td>Yes</td>
+      <td>No</td>
+      <td>Not needed</td>
+      <td>Not needed</td>
+    </tr>
+    <tr>
+      <td>Yes</td>
+      <td>X</td>
+      <td>Yes</td>
+      <td>No</td>
+      <td>Yes</td>
+      <td>Not needed</td>
+    </tr>
+    <tr>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>X</td>
+      <td>No</td>
+      <td>Not needed</td>
+      <td>Yes</td>
+    </tr>
+    <tr>
+      <td>Yes</td>
+      <td>No</td>
+      <td>No</td>
+      <td>No</td>
+      <td>Yes</td>
+      <td>Yes</td>
+    </tr>
+    <tr>
+      <td>Yes</td>
+      <td>X</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>N/A</td>
+    </tr>
+    <tr>
+      <td>Yes</td>
+      <td>X</td>
+      <td>No</td>
+      <td>Yes</td>
+      <td>Attack not possible</td>
+      <td> </td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 id="summing-up">Summing up</h3>
+
+<ol>
+  <li>
+    <p>The attack paths presented here take advantage from neglected security holes. 
+Namely, protecting the integrity of a shared object (*.so) or checking the <code class="language-plaintext highlighter-rouge">show_touches</code> option to be disabled, in addition to a check on the developer options.</p>
+  </li>
+  <li>
+    <p>The attacks require a shell session as root. Actions will be carried out when the target application is not in use, so no need to worry about security checks (depending on how root has been obtained).</p>
+  </li>
+  <li>
+    <p>Depending on the exact case (see the different cases discussed above), different additional requirements would be needed for the attack to be applicable:</p>
+    <ul>
+      <li>If disabling the <code class="language-plaintext highlighter-rouge">FLAG_SECURE</code> flag is required, an unprotected shared object (being loaded before the PIN pad is used) is needed.</li>
+      <li>If the <code class="language-plaintext highlighter-rouge">show_touches</code> option is needed, the attack privilege must allow to edit the system settings. Moreover, a shell session not related to ADB is needed.</li>
+    </ul>
+  </li>
+</ol>
+
+<h3 id="conclusion">Conclusion</h3>
+<ul>
+  <li>Keep thinking about security, don’t take it for granted!</li>
+  <li>Pay attention to the small details. Is there an easy way in somewhere?</li>
+  <li>Keep this picture in sight:</li>
+</ul>
+
+<p align="center">
+<img src="/assets/images/abusing_shared_object/breach.png" />
+</p>
+
+        
+      </section>
+
+      <footer class="page__meta">
+        
+        
+  
+
+
+  
+  
+  
+
+  <p class="page__taxonomy">
+    <strong><i class="fas fa-fw fa-tags" aria-hidden="true"></i> Tags: </strong>
+    <span itemprop="keywords">
+    
+      
+      
+      <a href="/tags/#android" class="page__taxonomy-item" rel="tag">Android</a><span class="sep">, </span>
+    
+      
+      
+      <a href="/tags/#bypass" class="page__taxonomy-item" rel="tag">Bypass</a><span class="sep">, </span>
+    
+      
+      
+      <a href="/tags/#injection" class="page__taxonomy-item" rel="tag">Injection</a><span class="sep">, </span>
+    
+      
+      
+      <a href="/tags/#tampering" class="page__taxonomy-item" rel="tag">Tampering</a>
+    
+    </span>
+  </p>
+
+
+
+
+  
+
+
+  
+  
+  
+
+  <p class="page__taxonomy">
+    <strong><i class="fas fa-fw fa-folder-open" aria-hidden="true"></i> Categories: </strong>
+    <span itemprop="keywords">
+    
+      
+      
+      <a href="/categories/#android" class="page__taxonomy-item" rel="tag">Android</a>
+    
+    </span>
+  </p>
+
+
+        
+          <p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Fecha:</strong> <time datetime="2023-01-16T00:00:00+00:00">January 16, 2023</time></p>
+        
+      </footer>
+
+      
+
+      
+    </div>
+
+    
+  </article>
+
+  
+</div>
+
+    </div>
+
+    
+
+    <div class="page__footer">
+      <footer>
+        <!-- start custom footer snippets -->
+
+<!-- end custom footer snippets -->
+        <div class="page__footer-follow">
+  <ul class="social-icons">
+    
+
+    
+
+    <li><a href="/feed.xml"><i class="fas fa-fw fa-rss-square" aria-hidden="true"></i> Feed</a></li>
+  </ul>
+</div>
+
+<div class="page__footer-copyright">&copy; 2023 Ardgeor</div>
+
+      </footer>
+    </div>
+
+    
+  <script src="/assets/js/main.min.js"></script>
+  <script data-search-pseudo-elements defer src="https://use.fontawesome.com/releases/v5.7.1/js/all.js" integrity="sha384-eVEQC9zshBn0rFj4+TU78eNA19HMNigMviK/PU/FFjLXqa/GKPgX58rvt5Z8PLs7" crossorigin="anonymous"></script>
+
+
+
+
+
+
+
+
+  </body>
+</html>
