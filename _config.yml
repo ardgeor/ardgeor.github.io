@@ -16,14 +16,14 @@ minimal_mistakes_skin    : "ardgeor" # "air", "aqua", "contrast", "dark", "dirt"
 
 # Site Settings
 locale                   : "en-US"
-title                    : "Ardgeor's site | A hacking corner"
+title                    : "Ardgeor's"
 title_separator          : "-"
 name                     : "Ardgeor"
-description              : "Articles sobre ciberseguridad, CTFs e investigaciones"
+description              : "Interests: reverse engineering, Android, ethical hacking, development, CTF, ..."
 url                      : "https://ardgeor.github.io" # the base hostname & protocol for your site e.g. "https://mmistakes.github.io"
 baseurl                  : # the subpath of your site, e.g. "/blog"
 repository               : "ardgeor/ardgeor.github.io" # GitHub username/repo-name e.g. "mmistakes/minimal-mistakes"
-#logo                     : "/assets/images/masthead.png"
+# logo                     : "/assets/images/light.png"
 teaser                   : # path of fallback teaser image, e.g. "/assets/images/500x300.png"
 breadcrumbs              : true # true, false (default)
 words_per_minute         : 200
@@ -101,7 +101,7 @@ analytics:
 
 # Site Author
 author:
-  name             : "Ardgeor"
+  name             : "Gerardo Pinar Loriente"
   avatar           : "/assets/images/avatar.png"
   bio              : "Security Engineer"
   uri              :
@@ -118,7 +118,7 @@ author:
   keybase          :
   instagram        :
   lastfm           :
-  linkedin         : #"" # (the last part of your profile url, e.g. https://www.linkedin.com/in/john-doe-12345678)
+  linkedin         : "gerardo-pinar-loriente-5b6384b5" # (the last part of your profile url, e.g. https://www.linkedin.com/in/john-doe-12345678)
   pinterest        :
   soundcloud       :
   stackoverflow    : # "123456/username" (the last part of your profile url, e.g. https://stackoverflow.com/users/123456/username)

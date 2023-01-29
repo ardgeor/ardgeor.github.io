@@ -1,21 +1,21 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.5">Jekyll</generator><link href="http://0.0.0.0:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://0.0.0.0:4000/" rel="alternate" type="text/html" /><updated>2023-01-25T23:55:50+00:00</updated><id>http://0.0.0.0:4000/feed.xml</id><title type="html">Ardgeor’s site | A hacking corner</title><subtitle>Articles sobre ciberseguridad, CTFs e investigaciones</subtitle><author><name>Ardgeor</name></author><entry><title type="html">Why you should protect the integrity of the native libraries: stealing the PIN code of a mobile application through the screen, without triggering the protections and without reverse engineering.</title><link href="http://0.0.0.0:4000/abusing-shared-object-in-android-applications/" rel="alternate" type="text/html" title="Why you should protect the integrity of the native libraries: stealing the PIN code of a mobile application through the screen, without triggering the protections and without reverse engineering." /><published>2023-01-16T00:00:00+00:00</published><updated>2023-01-16T00:00:00+00:00</updated><id>http://0.0.0.0:4000/abusing-shared-object-in-android-applications</id><content type="html" xml:base="http://0.0.0.0:4000/abusing-shared-object-in-android-applications/">&lt;!-- &lt;p align=&quot;center&quot;&gt;
-&lt;img src=&quot;/assets/images/antenacasera/portada-antena.jpg&quot;&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.5">Jekyll</generator><link href="http://0.0.0.0:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://0.0.0.0:4000/" rel="alternate" type="text/html" /><updated>2023-01-29T20:43:39+00:00</updated><id>http://0.0.0.0:4000/feed.xml</id><title type="html">Ardgeor’s</title><subtitle>Interests: reverse engineering, Android, ethical hacking, development, CTF, ...</subtitle><author><name>Gerardo Pinar Loriente</name></author><entry><title type="html">Why you should also protect the integrity of the native libraries</title><link href="http://0.0.0.0:4000/abusing-shared-object-in-android-applications/" rel="alternate" type="text/html" title="Why you should also protect the integrity of the native libraries" /><published>2023-01-16T00:00:00+00:00</published><updated>2023-01-16T00:00:00+00:00</updated><id>http://0.0.0.0:4000/abusing-shared-object-in-android-applications</id><content type="html" xml:base="http://0.0.0.0:4000/abusing-shared-object-in-android-applications/">&lt;!-- &lt;p align=&quot;center&quot;&gt;
+&lt;img src=&quot;/assets/images/abusing_shared_object/cover.png&quot;&gt;
 &lt;/p&gt; --&gt;
 
 &lt;h2 id=&quot;introduction&quot;&gt;Introduction&lt;/h2&gt;
 
-&lt;p&gt;Nowadays, mobile applications handling sensitive information are usually much better protected than a few years ago. 
-Commercial solutions are involved during the build process, providing obfuscation and protections against techniques such as 
+&lt;p&gt;Nowadays, the developers of mobile applications handling sensitive information are usually aware of the security risks. 
+Open-source and commercial solutions are involved during the build process, providing obfuscation and protections against techniques such as 
 tampering, dynamic instrumentation, debugging, rooting, emulation, etc. These protection techniques have significantly evolved 
 in the last years. Thus, bypassing these mechanisms usually requires advanced reverse engineering skills.&lt;/p&gt;
 
-&lt;p&gt;However, there are security holes that are often overlooked, becoming low-hanging fruit that can be aimed by not necessarily
+&lt;p&gt;However, there are still security holes that should not be overlooked, as they become low-hanging fruit that can be aimed by not necessarily
 highly skilled attackers.&lt;/p&gt;
 
 &lt;p&gt;An example of how what could be a banking application could be compromised is discussed in this article.&lt;/p&gt;
 
 &lt;p&gt;This article is written with the purpose of raising awareness about the importance of taking care of the small details when developping products.
-A huge security infrastructure might become useless if we leave an open window somewhere.&lt;/p&gt;
+A huge defensive system might become useless if we leave an open window somewhere.&lt;/p&gt;
 
 &lt;h2 id=&quot;proof-of-concept-poc&quot;&gt;Proof of Concept (PoC)&lt;/h2&gt;
 
@@ -38,7 +38,10 @@ is shown below:&lt;/p&gt;
 &lt;img src=&quot;/assets/images/abusing_shared_object/flag_secure.png&quot; /&gt;
 &lt;/p&gt;
 
-&lt;p&gt;Thus, when trying to take a screenshot, it is now allowed by the system:&lt;/p&gt;
+&lt;p&gt;Hence, when this flag is set, capturing the screen is not allowed by the system. 
+For instance, if we try to record the screen it will be shown in black; 
+and if we try to take a screenshot through a button combination, it will not be allowed 
+and a message like the one in the picture below will be shown:&lt;/p&gt;
 
 &lt;p align=&quot;center&quot;&gt;
 &lt;img src=&quot;/assets/images/abusing_shared_object/failed_screenshot.png&quot; /&gt;
@@ -92,11 +95,11 @@ is shown below:&lt;/p&gt;
 
 &lt;p&gt;In Android, the libraries embedded in an APK are placed within a directory dedicated for the specific application in the path &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;/data/app&lt;/code&gt;. For our case, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;libvuln.so&lt;/code&gt; is placed in &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;/data/app/ardgeor.libabuse.poc.targetapp-1/lib/arm64&lt;/code&gt;. For our attack, we would simply replace &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;libvuln.so&lt;/code&gt; by the “liefed” version. We would also copy &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;librogue.so&lt;/code&gt; in the same directory.&lt;/p&gt;
 
-&lt;p&gt;At this point, there are two point that need to be clarified:&lt;/p&gt;
+&lt;p&gt;At this point, there are two aspects that need to be clarified:&lt;/p&gt;
 
 &lt;ol&gt;
-  &lt;li&gt;Of course, we need to be &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;root&lt;/code&gt; in order to write in &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;/data/app&lt;/code&gt;. However, this does not necessarily entail to bypass the root protection, as this action can be carried out when the application is not running. Thus, it would be enough for an attacker to be have the capacity to temporarily elevate privileges.&lt;/li&gt;
-  &lt;li&gt;Actually, the native libraries are placed in the directory for the application in &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;/data/app&lt;/code&gt; as long as the flag &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;android:extractNativeLibs&lt;/code&gt; is not set to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;false&lt;/code&gt; in the Android manifest. However, if we place the modified version of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;libvuln.so&lt;/code&gt; in this directory, it will be the binary loaded in memory, as that’s the preferred location.&lt;/li&gt;
+  &lt;li&gt;Of course, we need to be &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;root&lt;/code&gt; in order to write in &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;/data/app&lt;/code&gt;. However, this does not necessarily entail to bypass the root protection, as this action can be carried out when the application is not running. Thus, it would be enough for an attacker to just temporarily elevate privileges.&lt;/li&gt;
+  &lt;li&gt;Actually, the native libraries are placed in the directory for the application in &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;/data/app&lt;/code&gt; as long as the flag &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;android:extractNativeLibs&lt;/code&gt; is not set to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;false&lt;/code&gt; in the Android manifest. However, if we place the modified version of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;libvuln.so&lt;/code&gt; in this directory, this will be the binary loaded in memory, as that’s the preferred location.&lt;/li&gt;
 &lt;/ol&gt;
 
 &lt;p align=&quot;center&quot;&gt;
@@ -115,7 +118,7 @@ A message in the log reveals that the library &lt;code class=&quot;language-plai
 &lt;p&gt;So, we are already able to execute the code from our own native library. What would we like to do at this point?&lt;/p&gt;
 
 &lt;p&gt;Thinking as an attacker about a real scenario, it would be great to disable the flag &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;FLAG_SECURE&lt;/code&gt; on the PIN activity and add functionality to take screenshots or record the screen, as well as support to send information to a server controlled by the attacker. As we plan to make calls at the Java layer, it would be more convenient to write Java code, generate a DEX file and load it from &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;librogue.so&lt;/code&gt;.
-The article &lt;a href=&quot;https://erev0s.com/blog/3-ways-for-dynamic-code-loading-in-android/&quot;&gt;Three ways for dynamic code loading in Android&lt;/a&gt; may serve as inspiration for loading the DEX.&lt;/p&gt;
+The article &lt;a href=&quot;https://erev0s.com/blog/3-ways-for-dynamic-code-loading-in-android/&quot;&gt;&lt;em&gt;Three ways for dynamic code loading in Android&lt;/em&gt;&lt;/a&gt; may serve as inspiration for loading the DEX.&lt;/p&gt;
 
 &lt;p&gt;Thus, Java reflection calls were included in &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;librogue.so&lt;/code&gt; to use, through the JNI, the class &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;DexClassLoader&lt;/code&gt; for loading our DEX &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;rogue.dex&lt;/code&gt;. This is shown in the log snippet below:&lt;/p&gt;
 
@@ -149,8 +152,8 @@ At this point there are different possibilities, let us go accross them and anal
 
 &lt;h4 id=&quot;the-pin-pad-provides-a-visual-feedback-when-a-button-is-pressed&quot;&gt;The PIN pad provides a visual feedback when a button is pressed&lt;/h4&gt;
 
-&lt;p&gt;The easiest case for the attacker would be when a visual feedback is produced when pressing a button of the PIN pad, i.e. when simply by observing the screen 
-we can know what buttons are pressed. For instance, from the screen shown in the figure below, we can know that the button &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;2&lt;/code&gt; was pressed.&lt;/p&gt;
+&lt;p&gt;The easiest case for the attacker would be when a visual feedback is produced when pressing a button of the PIN pad.
+For instance, from the screen shown in the figure below, we can know that the button &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;2&lt;/code&gt; was pressed, as a shadow appeared on the button.&lt;/p&gt;
 
 &lt;p align=&quot;center&quot;&gt;
 &lt;img src=&quot;/assets/images/abusing_shared_object/visual_fb_button_pressed.png&quot; /&gt;
@@ -168,16 +171,21 @@ An additional capability will be required, related to where the user touched on 
 &lt;img src=&quot;/assets/images/abusing_shared_object/show_taps.png&quot; /&gt;
 &lt;/p&gt;
 
-&lt;p&gt;This option solved the problem, except that we had said that the application did not allow the developer options to be enabled…&lt;/p&gt;
+&lt;p&gt;This apparently solved the problem, except that we had said that the application did not allow the developer options to be enabled…&lt;/p&gt;
 
 &lt;p&gt;But we had also mentioned that this attack needs the ability to temporarily become root. A root privilege allows to activate the 
-&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;show_touches&lt;/code&gt; setting. However, a shell session &lt;strong&gt;without useing ADB&lt;/strong&gt; is needed.&lt;/p&gt;
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;show_touches&lt;/code&gt; setting. However, a shell session &lt;strong&gt;independent from ADB&lt;/strong&gt; is needed.&lt;/p&gt;
 
-&lt;p&gt;Let us think again of a real scenario, let’s imagine an attacker that has remote a shell session on the phone through e.g. using the SSH protocol.
-The attacker must elevate privileges to root, and the privilege obtained must allow to edit the settings. 
+&lt;p&gt;Let us think again of a real scenario, let’s imagine an attacker that has a remote shell session on the phone through e.g. using the SSH protocol.
+The attacker must become root, and the privilege obtained must allow to edit the settings. 
 If this is achieved, the following command will activate the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;show_touches&lt;/code&gt; option:&lt;/p&gt;
 
 &lt;div class=&quot;language-shell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; &lt;span class=&quot;se&quot;&gt;\#&lt;/span&gt;  content insert &lt;span class=&quot;nt&quot;&gt;--uri&lt;/span&gt; content://settings/system &lt;span class=&quot;nt&quot;&gt;--bind&lt;/span&gt; name:s:show_touches &lt;span class=&quot;nt&quot;&gt;--bind&lt;/span&gt; value:i:1
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;or also:&lt;/p&gt;
+
+&lt;div class=&quot;language-shell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; &lt;span class=&quot;se&quot;&gt;\#&lt;/span&gt;  settings put system show_touches 1
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;p&gt;A couple of comments about this:&lt;/p&gt;
@@ -186,7 +194,7 @@ If this is achieved, the following command will activate the &lt;code class=&quo
   &lt;li&gt;If the developer options are enabled, and then disabled, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;show_touches&lt;/code&gt; option will be disabled.&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;p&gt;Well, at this point nothing prevents us from capturing the PIN:&lt;/p&gt;
+&lt;p&gt;Well, at this point nothing prevents us from capturing the PIN, as shown in the picture below, where a tap appears on the digit &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;2&lt;/code&gt;:&lt;/p&gt;
 
 &lt;p align=&quot;center&quot;&gt;
 &lt;img src=&quot;/assets/images/abusing_shared_object/capture_touch.png&quot; /&gt;
@@ -195,7 +203,7 @@ If this is achieved, the following command will activate the &lt;code class=&quo
 &lt;h4 id=&quot;further-discussion&quot;&gt;Further discussion&lt;/h4&gt;
 
 &lt;p&gt;There are more possibilities that could make the attack unviable or even easier. 
-For instance, if the position of the buttons is always the same, we don’t really need to * see* the PIN pad, it is enough to see the taps, and 
+For instance, if the position of the buttons is always the same, we don’t really need to * see * the PIN pad, it is enough to see the taps, and 
 then derive the button that was pressed.&lt;/p&gt;
 
 &lt;p&gt;Let us see an example. The screen shown below has been captured. As we can see, the flag &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;FLAG_SECURE&lt;/code&gt; has not be disabled, but the
@@ -206,7 +214,7 @@ then derive the button that was pressed.&lt;/p&gt;
 &lt;/p&gt;
 
 &lt;p&gt;If the position of the buttons is static, we can just superimpose a template of the PIN pad on the screen capture, and we get obtain the button that was pressed. 
-Or we can directly guess from the screen capture :)&lt;/p&gt;
+Or we can directly infer it from the screen capture :)&lt;/p&gt;
 
 &lt;p align=&quot;center&quot;&gt;
 &lt;img src=&quot;/assets/images/abusing_shared_object/not_visible_with_template.png&quot; /&gt;
@@ -214,13 +222,13 @@ Or we can directly guess from the screen capture :)&lt;/p&gt;
 
 &lt;p&gt;A more complicated case would be when there is no visual feedback and also the position of the buttons is not predictable. 
 In this case, we would again need both disabling the flag &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;FLAG_SECURE&lt;/code&gt;, in order to see where each button is placed; 
-and also enable the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;show_touches&lt;/code&gt; option, to obtain visual feedback. Un example is shown below:&lt;/p&gt;
+and also enable the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;show_touches&lt;/code&gt; option, to obtain visual feedback. An example is shown below:&lt;/p&gt;
 
 &lt;p align=&quot;center&quot;&gt;
 &lt;img src=&quot;/assets/images/abusing_shared_object/unpredictable.png&quot; /&gt;
 &lt;/p&gt;
 
-&lt;p&gt;Finally, if the application checks the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;show_touches&lt;/code&gt; option and refuses to execute normally if it is enabled; and there is no visual feedback on the PIN pad; then, in this case, retrieving the PIN from the string is, a priori, not possible.&lt;/p&gt;
+&lt;p&gt;Finally, if the application checks the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;show_touches&lt;/code&gt; option and refuses to execute normally if it is enabled; and there is no visual feedback on the PIN pad; then, in this case, retrieving the PIN from the screen is, a priori, not possible.&lt;/p&gt;
 
 &lt;p&gt;The relevant cases are summarized in the table below:&lt;/p&gt;
 
@@ -302,27 +310,31 @@ and also enable the &lt;code class=&quot;language-plaintext highlighter-rouge&qu
 &lt;ol&gt;
   &lt;li&gt;
     &lt;p&gt;The attack paths presented here take advantage from neglected security holes. 
-Namely, protecting the integrity of a shared object (*.so) or checking the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;show_touches&lt;/code&gt; option to be disabled, in addition to a check on the developer options.&lt;/p&gt;
+Namely, absence of integrity checks on the shared objects (*.so), and absence of a explicit check on the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;show_touches&lt;/code&gt; option to be disabled.&lt;/p&gt;
   &lt;/li&gt;
   &lt;li&gt;
-    &lt;p&gt;The attacks require a shell session as root. Actions will be carried out when the target application is not in use, so no need to worry about security checks (depending on how root has been obtained).&lt;/p&gt;
+    &lt;p&gt;The attack require a shell session as root. Actions will be carried out when the target application is not in use, so no need to worry about security checks (depending on how root has been obtained).&lt;/p&gt;
   &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;Depending on the exact case (see the different cases discussed above), different additional requirements would be needed for the attack to be applicable:&lt;/p&gt;
+  &lt;li&gt;Depending on the exact case (see the different cases discussed above), different additional requirements would be needed for the attack to be applicable:
     &lt;ul&gt;
       &lt;li&gt;If disabling the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;FLAG_SECURE&lt;/code&gt; flag is required, an unprotected shared object (being loaded before the PIN pad is used) is needed.&lt;/li&gt;
-      &lt;li&gt;If the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;show_touches&lt;/code&gt; option is needed, the attack privilege must allow to edit the system settings. Moreover, a shell session not related to ADB is needed.&lt;/li&gt;
+      &lt;li&gt;If the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;show_touches&lt;/code&gt; option is needed, the attack privilege must allow to edit the system settings. Moreover, a shell session &lt;strong&gt;not related to ADB&lt;/strong&gt; is needed.&lt;/li&gt;
     &lt;/ul&gt;
   &lt;/li&gt;
+  &lt;li&gt;The attack can apply to any application, without customization, as long as the required conditions are fulfilled.&lt;/li&gt;
 &lt;/ol&gt;
+
+&lt;h3 id=&quot;what-else&quot;&gt;What else?&lt;/h3&gt;
+
+&lt;p&gt;Note that if we are able to inject code, this opens the door to new attacks :)&lt;/p&gt;
 
 &lt;h3 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h3&gt;
 &lt;ul&gt;
-  &lt;li&gt;Keep thinking about security, don’t take it for granted!&lt;/li&gt;
+  &lt;li&gt;Keep thinking about security, don’t take it for granted.&lt;/li&gt;
   &lt;li&gt;Pay attention to the small details. Is there an easy way in somewhere?&lt;/li&gt;
   &lt;li&gt;Keep this picture in sight:&lt;/li&gt;
 &lt;/ul&gt;
 
 &lt;p align=&quot;center&quot;&gt;
 &lt;img src=&quot;/assets/images/abusing_shared_object/breach.png&quot; /&gt;
-&lt;/p&gt;</content><author><name>Ardgeor</name></author><category term="Android" /><category term="Tampering" /><category term="Injection" /><category term="Bypass" /><summary type="html">Mobile applications that handle sensitive data are often well protected. However, specific security holes are frequently disregarded. For instance, neglecting the protection of a native library integrity opens the door to code injection, eventually leading to the leak of secrets.</summary></entry></feed>
+&lt;/p&gt;</content><author><name>Gerardo Pinar Loriente</name></author><category term="Android" /><category term="Tampering" /><category term="Injection" /><category term="Bypass" /><summary type="html">In this article we will see how a native library can be abused to inject code and capture the PIN code from an Android application, without triggering the protections. All without doing reverse engineering.</summary></entry></feed>

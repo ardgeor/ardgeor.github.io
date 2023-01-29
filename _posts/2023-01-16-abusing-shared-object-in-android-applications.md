@@ -1,12 +1,8 @@
 ---
 layout: single
-title: "Why you should protect the integrity of the native libraries: stealing the PIN code of a mobile application through the screen, without triggering the protections and without reverse engineering."
-# title: Stealing the PIN code of a mobile application through the screen, without triggering the protections and without reverse engineering.
-excerpt: "Mobile applications that handle sensitive data are often well protected. 
-However, specific security holes are frequently disregarded. 
-For instance, neglecting the protection of a native library integrity opens the door to code injection, 
-eventually leading to the leak of secrets."
-# excerpt: "Abusing a native library to inject code and capture secrets without triggering the protections. All without doing reverse engineering."
+title: "Why you should also protect the integrity of the native libraries"
+excerpt: "In this article we will see how a native library can be abused to inject code and capture the PIN code from an Android application, 
+without triggering the protections. All without doing reverse engineering."
 
 date: 2023-01-16
 classes: wide
@@ -23,24 +19,24 @@ tags:
 ---
 
 <!-- <p align="center">
-<img src="/assets/images/antenacasera/portada-antena.jpg">
+<img src="/assets/images/abusing_shared_object/cover.png">
 </p> -->
 
 
 ## Introduction
 
-Nowadays, mobile applications handling sensitive information are usually much better protected than a few years ago. 
-Commercial solutions are involved during the build process, providing obfuscation and protections against techniques such as 
+Nowadays, the developers of mobile applications handling sensitive information are usually aware of the security risks. 
+Open-source and commercial solutions are involved during the build process, providing obfuscation and protections against techniques such as 
 tampering, dynamic instrumentation, debugging, rooting, emulation, etc. These protection techniques have significantly evolved 
 in the last years. Thus, bypassing these mechanisms usually requires advanced reverse engineering skills.
 
-However, there are security holes that are often overlooked, becoming low-hanging fruit that can be aimed by not necessarily
+However, there are still security holes that should not be overlooked, as they become low-hanging fruit that can be aimed by not necessarily
 highly skilled attackers. 
 
 An example of how what could be a banking application could be compromised is discussed in this article.
 
 This article is written with the purpose of raising awareness about the importance of taking care of the small details when developping products.
-A huge security infrastructure might become useless if we leave an open window somewhere.
+A huge defensive system might become useless if we leave an open window somewhere.
 
 ## Proof of Concept (PoC)
 
@@ -64,7 +60,10 @@ is shown below:
 <img src="/assets/images/abusing_shared_object/flag_secure.png">
 </p>
 
-Thus, when trying to take a screenshot, it is now allowed by the system:
+Hence, when this flag is set, capturing the screen is not allowed by the system. 
+For instance, if we try to record the screen it will be shown in black; 
+and if we try to take a screenshot through a button combination, it will not be allowed 
+and a message like the one in the picture below will be shown:
 
 <p align="center">
 <img src="/assets/images/abusing_shared_object/failed_screenshot.png">
@@ -123,10 +122,10 @@ By inspecting the strings of the binary produced, we can confirm that `librogue.
 
 In Android, the libraries embedded in an APK are placed within a directory dedicated for the specific application in the path `/data/app`. For our case, `libvuln.so` is placed in `/data/app/ardgeor.libabuse.poc.targetapp-1/lib/arm64`. For our attack, we would simply replace `libvuln.so` by the "liefed" version. We would also copy `librogue.so` in the same directory. 
 
-At this point, there are two point that need to be clarified: 
+At this point, there are two aspects that need to be clarified: 
 
-1. Of course, we need to be `root` in order to write in `/data/app`. However, this does not necessarily entail to bypass the root protection, as this action can be carried out when the application is not running. Thus, it would be enough for an attacker to be have the capacity to temporarily elevate privileges.
-2. Actually, the native libraries are placed in the directory for the application in `/data/app` as long as the flag `android:extractNativeLibs` is not set to `false` in the Android manifest. However, if we place the modified version of `libvuln.so` in this directory, it will be the binary loaded in memory, as that's the preferred location. 
+1. Of course, we need to be `root` in order to write in `/data/app`. However, this does not necessarily entail to bypass the root protection, as this action can be carried out when the application is not running. Thus, it would be enough for an attacker to just temporarily elevate privileges.
+2. Actually, the native libraries are placed in the directory for the application in `/data/app` as long as the flag `android:extractNativeLibs` is not set to `false` in the Android manifest. However, if we place the modified version of `libvuln.so` in this directory, this will be the binary loaded in memory, as that's the preferred location. 
 
 
 <p align="center">
@@ -147,7 +146,7 @@ A message in the log reveals that the library `librogue.so` is executing. No dis
 So, we are already able to execute the code from our own native library. What would we like to do at this point?
 
 Thinking as an attacker about a real scenario, it would be great to disable the flag `FLAG_SECURE` on the PIN activity and add functionality to take screenshots or record the screen, as well as support to send information to a server controlled by the attacker. As we plan to make calls at the Java layer, it would be more convenient to write Java code, generate a DEX file and load it from `librogue.so`.
-The article [Three ways for dynamic code loading in Android](https://erev0s.com/blog/3-ways-for-dynamic-code-loading-in-android/) may serve as inspiration for loading the DEX.
+The article [*Three ways for dynamic code loading in Android*](https://erev0s.com/blog/3-ways-for-dynamic-code-loading-in-android/) may serve as inspiration for loading the DEX.
 
 Thus, Java reflection calls were included in `librogue.so` to use, through the JNI, the class `DexClassLoader` for loading our DEX `rogue.dex`. This is shown in the log snippet below: 
 
@@ -183,8 +182,8 @@ At this point there are different possibilities, let us go accross them and anal
 
 #### The PIN pad provides a visual feedback when a button is pressed
 
-The easiest case for the attacker would be when a visual feedback is produced when pressing a button of the PIN pad, i.e. when simply by observing the screen 
-we can know what buttons are pressed. For instance, from the screen shown in the figure below, we can know that the button `2` was pressed.
+The easiest case for the attacker would be when a visual feedback is produced when pressing a button of the PIN pad.
+For instance, from the screen shown in the figure below, we can know that the button `2` was pressed, as a shadow appeared on the button.
 
 <p align="center">
 <img src="/assets/images/abusing_shared_object/visual_fb_button_pressed.png">
@@ -203,17 +202,23 @@ There exists a feature that satisfies this need: the `show_touches` option, or "
 <img src="/assets/images/abusing_shared_object/show_taps.png">
 </p>
 
-This option solved the problem, except that we had said that the application did not allow the developer options to be enabled...
+This apparently solved the problem, except that we had said that the application did not allow the developer options to be enabled...
 
 But we had also mentioned that this attack needs the ability to temporarily become root. A root privilege allows to activate the 
-`show_touches` setting. However, a shell session **without useing ADB** is needed.
+`show_touches` setting. However, a shell session **independent from ADB** is needed.
 
-Let us think again of a real scenario, let's imagine an attacker that has remote a shell session on the phone through e.g. using the SSH protocol.
-The attacker must elevate privileges to root, and the privilege obtained must allow to edit the settings. 
+Let us think again of a real scenario, let's imagine an attacker that has a remote shell session on the phone through e.g. using the SSH protocol.
+The attacker must become root, and the privilege obtained must allow to edit the settings. 
 If this is achieved, the following command will activate the `show_touches` option:
 
 ```shell
  \#  content insert --uri content://settings/system --bind name:s:show_touches --bind value:i:1
+```
+
+or also:
+
+```shell
+ \#  settings put system show_touches 1
 ```
 
 A couple of comments about this: 
@@ -221,7 +226,7 @@ A couple of comments about this:
 - If the developer options are enabled, and then disabled, `show_touches` option will be disabled. 
 
 
-Well, at this point nothing prevents us from capturing the PIN: 
+Well, at this point nothing prevents us from capturing the PIN, as shown in the picture below, where a tap appears on the digit `2`: 
 
 <p align="center">
 <img src="/assets/images/abusing_shared_object/capture_touch.png">
@@ -231,7 +236,7 @@ Well, at this point nothing prevents us from capturing the PIN:
 #### Further discussion
 
 There are more possibilities that could make the attack unviable or even easier. 
-For instance, if the position of the buttons is always the same, we don't really need to * see* the PIN pad, it is enough to see the taps, and 
+For instance, if the position of the buttons is always the same, we don't really need to * see * the PIN pad, it is enough to see the taps, and 
 then derive the button that was pressed.
 
 Let us see an example. The screen shown below has been captured. As we can see, the flag `FLAG_SECURE` has not be disabled, but the
@@ -243,7 +248,7 @@ Let us see an example. The screen shown below has been captured. As we can see, 
 </p>
 
 If the position of the buttons is static, we can just superimpose a template of the PIN pad on the screen capture, and we get obtain the button that was pressed. 
-Or we can directly guess from the screen capture :)
+Or we can directly infer it from the screen capture :)
 
 
 <p align="center">
@@ -252,14 +257,14 @@ Or we can directly guess from the screen capture :)
 
 A more complicated case would be when there is no visual feedback and also the position of the buttons is not predictable. 
 In this case, we would again need both disabling the flag `FLAG_SECURE`, in order to see where each button is placed; 
-and also enable the `show_touches` option, to obtain visual feedback. Un example is shown below:
+and also enable the `show_touches` option, to obtain visual feedback. An example is shown below:
 
 <p align="center">
 <img src="/assets/images/abusing_shared_object/unpredictable.png">
 </p>
 
 
-Finally, if the application checks the `show_touches` option and refuses to execute normally if it is enabled; and there is no visual feedback on the PIN pad; then, in this case, retrieving the PIN from the string is, a priori, not possible.
+Finally, if the application checks the `show_touches` option and refuses to execute normally if it is enabled; and there is no visual feedback on the PIN pad; then, in this case, retrieving the PIN from the screen is, a priori, not possible.
 
 
 The relevant cases are summarized in the table below:
@@ -281,17 +286,24 @@ The relevant cases are summarized in the table below:
 ### Summing up
 
 1. The attack paths presented here take advantage from neglected security holes. 
-   Namely, protecting the integrity of a shared object (*.so) or checking the `show_touches` option to be disabled, in addition to a check on the developer options.
+   Namely, absence of integrity checks on the shared objects (*.so), and absence of a explicit check on the `show_touches` option to be disabled.
 
-2. The attacks require a shell session as root. Actions will be carried out when the target application is not in use, so no need to worry about security checks (depending on how root has been obtained).
+2. The attack require a shell session as root. Actions will be carried out when the target application is not in use, so no need to worry about security checks (depending on how root has been obtained).
 
 3. Depending on the exact case (see the different cases discussed above), different additional requirements would be needed for the attack to be applicable:
   * If disabling the `FLAG_SECURE` flag is required, an unprotected shared object (being loaded before the PIN pad is used) is needed.
-  * If the `show_touches` option is needed, the attack privilege must allow to edit the system settings. Moreover, a shell session not related to ADB is needed.
+  * If the `show_touches` option is needed, the attack privilege must allow to edit the system settings. Moreover, a shell session **not related to ADB** is needed.
+
+4. The attack can apply to any application, without customization, as long as the required conditions are fulfilled. 
+
+
+### What else?
+
+Note that if we are able to inject code, this opens the door to new attacks :)
 
 
 ### Conclusion
-* Keep thinking about security, don't take it for granted!
+* Keep thinking about security, don't take it for granted.
 * Pay attention to the small details. Is there an easy way in somewhere?
 * Keep this picture in sight:
 
