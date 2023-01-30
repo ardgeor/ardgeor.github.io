@@ -482,6 +482,8 @@ An additional capability will be required, related to where the user touched on 
 
 <p>This apparently solved the problem, except that we had said that the application did not allow the developer options to be enabled…</p>
 
+<h5 id="enabling-the-show_touches-feature-without-the-developer-options">Enabling the <code class="language-plaintext highlighter-rouge">show_touches</code> feature without the developer options</h5>
+
 <p>But we had also mentioned that this attack needs the ability to temporarily become root. A root privilege allows to activate the 
 <code class="language-plaintext highlighter-rouge">show_touches</code> setting. However, a shell session <strong>independent from ADB</strong> is needed.</p>
 
@@ -619,7 +621,8 @@ and also enable the <code class="language-plaintext highlighter-rouge">show_touc
 <ol>
   <li>
     <p>The attack paths presented here take advantage from neglected security holes. 
-Namely, absence of integrity checks on the shared objects (*.so), and absence of a explicit check on the <code class="language-plaintext highlighter-rouge">show_touches</code> option to be disabled.</p>
+Namely, absence of integrity checks on the shared objects (*.so), and absence of a explicit check on the <code class="language-plaintext highlighter-rouge">show_touches</code> option to be disabled
+(just a check on the developer options is not enough!).</p>
   </li>
   <li>
     <p>The attack require a shell session as root. Actions will be carried out when the target application is not in use, so no need to worry about security checks (depending on how root has been obtained).</p>

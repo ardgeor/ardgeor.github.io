@@ -204,6 +204,8 @@ There exists a feature that satisfies this need: the `show_touches` option, or "
 
 This apparently solved the problem, except that we had said that the application did not allow the developer options to be enabled...
 
+##### Enabling the `show_touches` feature without the developer options
+
 But we had also mentioned that this attack needs the ability to temporarily become root. A root privilege allows to activate the 
 `show_touches` setting. However, a shell session **independent from ADB** is needed.
 
@@ -286,7 +288,8 @@ The relevant cases are summarized in the table below:
 ### Summing up
 
 1. The attack paths presented here take advantage from neglected security holes. 
-   Namely, absence of integrity checks on the shared objects (*.so), and absence of a explicit check on the `show_touches` option to be disabled.
+   Namely, absence of integrity checks on the shared objects (*.so), and absence of a explicit check on the `show_touches` option to be disabled
+   (just a check on the developer options is not enough!).
 
 2. The attack require a shell session as root. Actions will be carried out when the target application is not in use, so no need to worry about security checks (depending on how root has been obtained).
 

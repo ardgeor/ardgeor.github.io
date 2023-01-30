@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.5">Jekyll</generator><link href="http://0.0.0.0:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://0.0.0.0:4000/" rel="alternate" type="text/html" /><updated>2023-01-30T19:27:48+00:00</updated><id>http://0.0.0.0:4000/feed.xml</id><title type="html">Ardgeor’s</title><subtitle>Interests: reverse engineering, Android, ethical hacking, development, CTF, ...</subtitle><author><name>Gerardo Pinar Loriente</name></author><entry><title type="html">Why you should also protect the integrity of the native libraries</title><link href="http://0.0.0.0:4000/abusing-shared-object-in-android-applications/" rel="alternate" type="text/html" title="Why you should also protect the integrity of the native libraries" /><published>2023-01-16T00:00:00+00:00</published><updated>2023-01-16T00:00:00+00:00</updated><id>http://0.0.0.0:4000/abusing-shared-object-in-android-applications</id><content type="html" xml:base="http://0.0.0.0:4000/abusing-shared-object-in-android-applications/">&lt;!-- &lt;p align=&quot;center&quot;&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.5">Jekyll</generator><link href="http://0.0.0.0:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://0.0.0.0:4000/" rel="alternate" type="text/html" /><updated>2023-01-30T20:35:15+00:00</updated><id>http://0.0.0.0:4000/feed.xml</id><title type="html">Ardgeor’s</title><subtitle>Interests: reverse engineering, Android, ethical hacking, development, CTF, ...</subtitle><author><name>Gerardo Pinar Loriente</name></author><entry><title type="html">Why you should also protect the integrity of the native libraries</title><link href="http://0.0.0.0:4000/abusing-shared-object-in-android-applications/" rel="alternate" type="text/html" title="Why you should also protect the integrity of the native libraries" /><published>2023-01-16T00:00:00+00:00</published><updated>2023-01-16T00:00:00+00:00</updated><id>http://0.0.0.0:4000/abusing-shared-object-in-android-applications</id><content type="html" xml:base="http://0.0.0.0:4000/abusing-shared-object-in-android-applications/">&lt;!-- &lt;p align=&quot;center&quot;&gt;
 &lt;img src=&quot;/assets/images/abusing_shared_object/cover.png&quot;&gt;
 &lt;/p&gt; --&gt;
 
@@ -173,6 +173,8 @@ An additional capability will be required, related to where the user touched on 
 
 &lt;p&gt;This apparently solved the problem, except that we had said that the application did not allow the developer options to be enabled…&lt;/p&gt;
 
+&lt;h5 id=&quot;enabling-the-show_touches-feature-without-the-developer-options&quot;&gt;Enabling the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;show_touches&lt;/code&gt; feature without the developer options&lt;/h5&gt;
+
 &lt;p&gt;But we had also mentioned that this attack needs the ability to temporarily become root. A root privilege allows to activate the 
 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;show_touches&lt;/code&gt; setting. However, a shell session &lt;strong&gt;independent from ADB&lt;/strong&gt; is needed.&lt;/p&gt;
 
@@ -310,7 +312,8 @@ and also enable the &lt;code class=&quot;language-plaintext highlighter-rouge&qu
 &lt;ol&gt;
   &lt;li&gt;
     &lt;p&gt;The attack paths presented here take advantage from neglected security holes. 
-Namely, absence of integrity checks on the shared objects (*.so), and absence of a explicit check on the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;show_touches&lt;/code&gt; option to be disabled.&lt;/p&gt;
+Namely, absence of integrity checks on the shared objects (*.so), and absence of a explicit check on the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;show_touches&lt;/code&gt; option to be disabled
+(just a check on the developer options is not enough!).&lt;/p&gt;
   &lt;/li&gt;
   &lt;li&gt;
     &lt;p&gt;The attack require a shell session as root. Actions will be carried out when the target application is not in use, so no need to worry about security checks (depending on how root has been obtained).&lt;/p&gt;
