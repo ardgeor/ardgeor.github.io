@@ -35,7 +35,7 @@ highly skilled attackers.
 
 An example of how what could be a banking application could be compromised is discussed in this article.
 
-This article is written with the purpose of raising awareness about the importance of taking care of the small details when developping products.
+This article is written with the purpose of raising awareness about the importance of taking care of the small details when developing products.
 A huge defensive system might become useless if we leave an open window somewhere.
 
 ## Proof of Concept (PoC)
@@ -178,7 +178,7 @@ And now we can capture the screen :)
 ### Capturing the PIN
 
 We have seen how it was possible to disable the flag `FLAG_SECURE` and take screenshots or record the screen. 
-At this point there are different possibilities, let us go accross them and analyze each particular case
+At this point there are different possibilities, let us go across them and analyze each particular case
 
 #### The PIN pad provides a visual feedback when a button is pressed
 
@@ -237,7 +237,7 @@ Well, at this point nothing prevents us from capturing the PIN, as shown in the 
 
 #### Further discussion
 
-There are more possibilities that could make the attack unviable or even easier. 
+There are more possibilities that could make the attack unfeasible or even easier. 
 For instance, if the position of the buttons is always the same, we don't really need to * see * the PIN pad, it is enough to see the taps, and 
 then derive the button that was pressed.
 

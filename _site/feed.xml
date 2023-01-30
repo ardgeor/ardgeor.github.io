@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.5">Jekyll</generator><link href="http://0.0.0.0:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://0.0.0.0:4000/" rel="alternate" type="text/html" /><updated>2023-01-30T20:35:15+00:00</updated><id>http://0.0.0.0:4000/feed.xml</id><title type="html">Ardgeor’s</title><subtitle>Interests: reverse engineering, Android, ethical hacking, development, CTF, ...</subtitle><author><name>Gerardo Pinar Loriente</name></author><entry><title type="html">Why you should also protect the integrity of the native libraries</title><link href="http://0.0.0.0:4000/abusing-shared-object-in-android-applications/" rel="alternate" type="text/html" title="Why you should also protect the integrity of the native libraries" /><published>2023-01-16T00:00:00+00:00</published><updated>2023-01-16T00:00:00+00:00</updated><id>http://0.0.0.0:4000/abusing-shared-object-in-android-applications</id><content type="html" xml:base="http://0.0.0.0:4000/abusing-shared-object-in-android-applications/">&lt;!-- &lt;p align=&quot;center&quot;&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.5">Jekyll</generator><link href="http://0.0.0.0:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://0.0.0.0:4000/" rel="alternate" type="text/html" /><updated>2023-01-30T21:11:32+00:00</updated><id>http://0.0.0.0:4000/feed.xml</id><title type="html">Ardgeor’s</title><subtitle>Interests: reverse engineering, Android, ethical hacking, development, CTF, ...</subtitle><author><name>Gerardo Pinar Loriente</name></author><entry><title type="html">Why you should also protect the integrity of the native libraries</title><link href="http://0.0.0.0:4000/abusing-shared-object-in-android-applications/" rel="alternate" type="text/html" title="Why you should also protect the integrity of the native libraries" /><published>2023-01-16T00:00:00+00:00</published><updated>2023-01-16T00:00:00+00:00</updated><id>http://0.0.0.0:4000/abusing-shared-object-in-android-applications</id><content type="html" xml:base="http://0.0.0.0:4000/abusing-shared-object-in-android-applications/">&lt;!-- &lt;p align=&quot;center&quot;&gt;
 &lt;img src=&quot;/assets/images/abusing_shared_object/cover.png&quot;&gt;
 &lt;/p&gt; --&gt;
 
@@ -14,7 +14,7 @@ highly skilled attackers.&lt;/p&gt;
 
 &lt;p&gt;An example of how what could be a banking application could be compromised is discussed in this article.&lt;/p&gt;
 
-&lt;p&gt;This article is written with the purpose of raising awareness about the importance of taking care of the small details when developping products.
+&lt;p&gt;This article is written with the purpose of raising awareness about the importance of taking care of the small details when developing products.
 A huge defensive system might become useless if we leave an open window somewhere.&lt;/p&gt;
 
 &lt;h2 id=&quot;proof-of-concept-poc&quot;&gt;Proof of Concept (PoC)&lt;/h2&gt;
@@ -148,7 +148,7 @@ The result can be observed in the log snippet below:&lt;/p&gt;
 &lt;h3 id=&quot;capturing-the-pin&quot;&gt;Capturing the PIN&lt;/h3&gt;
 
 &lt;p&gt;We have seen how it was possible to disable the flag &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;FLAG_SECURE&lt;/code&gt; and take screenshots or record the screen. 
-At this point there are different possibilities, let us go accross them and analyze each particular case&lt;/p&gt;
+At this point there are different possibilities, let us go across them and analyze each particular case&lt;/p&gt;
 
 &lt;h4 id=&quot;the-pin-pad-provides-a-visual-feedback-when-a-button-is-pressed&quot;&gt;The PIN pad provides a visual feedback when a button is pressed&lt;/h4&gt;
 
@@ -204,7 +204,7 @@ If this is achieved, the following command will activate the &lt;code class=&quo
 
 &lt;h4 id=&quot;further-discussion&quot;&gt;Further discussion&lt;/h4&gt;
 
-&lt;p&gt;There are more possibilities that could make the attack unviable or even easier. 
+&lt;p&gt;There are more possibilities that could make the attack unfeasible or even easier. 
 For instance, if the position of the buttons is always the same, we don’t really need to * see * the PIN pad, it is enough to see the taps, and 
 then derive the button that was pressed.&lt;/p&gt;
 
