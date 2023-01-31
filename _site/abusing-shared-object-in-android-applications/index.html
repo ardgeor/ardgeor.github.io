@@ -364,7 +364,7 @@ and a message like the one in the picture below will be shown:</p>
 
 <p>Let us also accept that the application is strongly obfuscated, and trying to understand how the security checks work would entail an arduous process of reverse engineering, which requires high skills.</p>
 
-<h3 id="an-open-window-to-the-fortress">An open window to the fortress</h3>
+<h3 id="an-open-window-through-the-fortress">An open window through the fortress</h3>
 
 <p>However, all this defensive effort described above might be in vain, as there is a small hole that leads inside of the fortress: the application has a native library whose integrity is not totally protected: <code class="language-plaintext highlighter-rouge">libvuln.so</code>.</p>
 
@@ -452,6 +452,18 @@ The result can be observed in the log snippet below:</p>
 
 <p align="center">
 <img src="/assets/images/abusing_shared_object/screenshot.png" />
+</p>
+
+<p>We could summarize this first part in three steps, as shown in the picture below:</p>
+
+<ol>
+  <li>Modify <code class="language-plaintext highlighter-rouge">libvuln.so</code> to indicate that <code class="language-plaintext highlighter-rouge">librogue.so</code> needs to be loaded.</li>
+  <li>From <code class="language-plaintext highlighter-rouge">librogue.so</code>, load <code class="language-plaintext highlighter-rouge">rogue.dex</code>.</li>
+  <li>From <code class="language-plaintext highlighter-rouge">rogue.dex</code>, recover the current activity and clear the flag <code class="language-plaintext highlighter-rouge">FLAG_SECURE</code> from the corresponding window object.</li>
+</ol>
+
+<p align="center">
+<img src="/assets/images/abusing_shared_object/attack_outline.png" />
 </p>
 
 <h3 id="capturing-the-pin">Capturing the PIN</h3>
@@ -616,7 +628,7 @@ and also enable the <code class="language-plaintext highlighter-rouge">show_touc
   </tbody>
 </table>
 
-<h3 id="summing-up">Summing up</h3>
+<h2 id="summing-up">Summing up</h2>
 
 <ol>
   <li>
@@ -633,14 +645,17 @@ Namely, absence of integrity checks on the shared objects (*.so), and absence of
       <li>If the <code class="language-plaintext highlighter-rouge">show_touches</code> option is needed, the attack privilege must allow to edit the system settings. Moreover, a shell session <strong>not related to ADB</strong> is needed.</li>
     </ul>
   </li>
-  <li>The attack can apply to any application, without customization, as long as the required conditions are fulfilled.</li>
+  <li>
+    <p>The attack can apply to any application, without customization, as long as the required conditions are fulfilled.</p>
+  </li>
+  <li>No reverse engineering is required.</li>
 </ol>
 
-<h3 id="what-else">What else?</h3>
+<h2 id="what-else">What else?</h2>
 
 <p>Note that if we are able to inject code, this opens the door to new attacks :)</p>
 
-<h3 id="conclusion">Conclusion</h3>
+<h2 id="conclusion">Conclusion</h2>
 <ul>
   <li>Keep thinking about security, don’t take it for granted.</li>
   <li>Pay attention to the small details. Is there an easy way in somewhere?</li>

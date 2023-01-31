@@ -78,7 +78,7 @@ Thus, any attempt to hook or tamper with the APK would eventually trigger a secu
 
 Let us also accept that the application is strongly obfuscated, and trying to understand how the security checks work would entail an arduous process of reverse engineering, which requires high skills.
 
-### An open window to the fortress
+### An open window through the fortress
 
 However, all this defensive effort described above might be in vain, as there is a small hole that leads inside of the fortress: the application has a native library whose integrity is not totally protected: `libvuln.so`.
 
@@ -172,6 +172,17 @@ And now we can capture the screen :)
 
 <p align="center">
 <img src="/assets/images/abusing_shared_object/screenshot.png">
+</p>
+
+
+We could summarize this first part in three steps, as shown in the picture below:
+
+1. Modify `libvuln.so` to indicate that `librogue.so` needs to be loaded.
+2. From `librogue.so`, load `rogue.dex`.
+3. From `rogue.dex`, recover the current activity and clear the flag `FLAG_SECURE` from the corresponding window object.
+
+<p align="center">
+<img src="/assets/images/abusing_shared_object/attack_outline.png">
 </p>
 
 
@@ -285,7 +296,7 @@ The relevant cases are summarized in the table below:
 
 
 
-### Summing up
+## Summing up
 
 1. The attack paths presented here take advantage from neglected security holes. 
    Namely, absence of integrity checks on the shared objects (*.so), and absence of a explicit check on the `show_touches` option to be disabled
@@ -297,15 +308,17 @@ The relevant cases are summarized in the table below:
   * If disabling the `FLAG_SECURE` flag is required, an unprotected shared object (being loaded before the PIN pad is used) is needed.
   * If the `show_touches` option is needed, the attack privilege must allow to edit the system settings. Moreover, a shell session **not related to ADB** is needed.
 
-4. The attack can apply to any application, without customization, as long as the required conditions are fulfilled. 
+4. The attack can apply to any application, without customization, as long as the required conditions are fulfilled.
+
+5. No reverse engineering is required.
 
 
-### What else?
+## What else?
 
 Note that if we are able to inject code, this opens the door to new attacks :)
 
 
-### Conclusion
+## Conclusion
 * Keep thinking about security, don't take it for granted.
 * Pay attention to the small details. Is there an easy way in somewhere?
 * Keep this picture in sight:
