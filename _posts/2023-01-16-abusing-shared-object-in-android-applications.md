@@ -260,7 +260,7 @@ Let us see an example. The screen shown below has been captured. As we can see, 
 <img src="/assets/images/abusing_shared_object/not_visible.png">
 </p>
 
-If the position of the buttons is static, we can just superimpose a template of the PIN pad on the screen capture, and we get obtain the button that was pressed. 
+If the position of the buttons is static, we can just superimpose a template of the PIN pad on the screen capture, and we obtain the button that was pressed. 
 Or we can directly infer it from the screen capture :)
 
 
@@ -302,7 +302,7 @@ The relevant cases are summarized in the table below:
    Namely, absence of integrity checks on the shared objects (*.so), and absence of a explicit check on the `show_touches` option to be disabled
    (just a check on the developer options is not enough!).
 
-2. The attack require a shell session as root. Actions will be carried out when the target application is not in use, so no need to worry about security checks (depending on how root has been obtained).
+2. The attack requires a shell session as root. Actions will be carried out when the target application is not in use, so no need to worry about security checks (depending on how root has been obtained).
 
 3. Depending on the exact case (see the different cases discussed above), different additional requirements would be needed for the attack to be applicable:
   * If disabling the `FLAG_SECURE` flag is required, an unprotected shared object (being loaded before the PIN pad is used) is needed.

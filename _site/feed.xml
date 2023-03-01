@@ -1,4 +1,208 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.5">Jekyll</generator><link href="http://0.0.0.0:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://0.0.0.0:4000/" rel="alternate" type="text/html" /><updated>2023-01-31T21:37:58+00:00</updated><id>http://0.0.0.0:4000/feed.xml</id><title type="html">Ardgeor’s</title><subtitle>Interests: reverse engineering, Android, ethical hacking, development, CTF, ...</subtitle><author><name>Gerardo Pinar Loriente</name></author><entry><title type="html">Why you should also protect the integrity of the native libraries</title><link href="http://0.0.0.0:4000/abusing-shared-object-in-android-applications/" rel="alternate" type="text/html" title="Why you should also protect the integrity of the native libraries" /><published>2023-01-16T00:00:00+00:00</published><updated>2023-01-16T00:00:00+00:00</updated><id>http://0.0.0.0:4000/abusing-shared-object-in-android-applications</id><content type="html" xml:base="http://0.0.0.0:4000/abusing-shared-object-in-android-applications/">&lt;!-- &lt;p align=&quot;center&quot;&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.5">Jekyll</generator><link href="http://0.0.0.0:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://0.0.0.0:4000/" rel="alternate" type="text/html" /><updated>2023-03-01T22:36:32+00:00</updated><id>http://0.0.0.0:4000/feed.xml</id><title type="html">Ardgeor’s</title><subtitle>Interests: reverse engineering, Android, ethical hacking, development, CTF, ...</subtitle><author><name>Gerardo Pinar Loriente</name></author><entry><title type="html">When Frida plays in the blue team</title><link href="http://0.0.0.0:4000/frida-can-play-in-the-blue-team/" rel="alternate" type="text/html" title="When Frida plays in the blue team" /><published>2023-02-28T00:00:00+00:00</published><updated>2023-02-28T00:00:00+00:00</updated><id>http://0.0.0.0:4000/frida-can-play-in-the-blue-team</id><content type="html" xml:base="http://0.0.0.0:4000/frida-can-play-in-the-blue-team/">&lt;!-- &lt;p align=&quot;center&quot;&gt;
+&lt;img src=&quot;/assets/images/abusing_shared_object/cover.png&quot;&gt;
+&lt;/p&gt; --&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://eniit.es/defendiendose-de-exploits-de-desbordamiento-de-buffer/&quot;&gt;Pincha aquí para ver el artículo en español&lt;/a&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;introduction&quot;&gt;Introduction&lt;/h2&gt;
+
+&lt;p&gt;We are used to see Frida as a valuable allied when we are on the attacker’s side. But Frida also happens to be a powerful partner when it comes to defending.
+This article is about stack buffer overflow, a problem with a lot of history which is not past yet. 
+Attack and defense methods have been competing for over 40 years, becoming more and more sophisticated: 
+canaries, data execution prevention (DEP), return-oriented programming (ROP), address space layout randomization (ASLR), etc.&lt;/p&gt;
+
+&lt;p&gt;Now let’s see one of the methods in which dynamic binary instrumentation (DBI) can help protect a vulnerable program.&lt;/p&gt;
+
+&lt;h2 id=&quot;stack-buffer-overflow&quot;&gt;Stack buffer overflow&lt;/h2&gt;
+
+&lt;p&gt;The stack buffer overflow problem appears whenever bytes are copied into a buffer with a limited size &lt;strong&gt;without having control on how many bytes are actually copied&lt;/strong&gt;.
+In the snippet below, the function &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;main&lt;/code&gt; receives data from the command line and passes it to the function &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;processData&lt;/code&gt;, where the data is copied into the local variable
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;buffer&lt;/code&gt;. This variable corresponds to an array of 64 characters. Since &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;buffer&lt;/code&gt; is a local variable, it lives in the stack.&lt;/p&gt;
+
+&lt;div class=&quot;language-c highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;processData&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;char&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;data&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;kt&quot;&gt;char&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;buffer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;64&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;strcpy&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;buffer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;data&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// &amp;lt;---------------- BoF!&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;printf&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;Data processed: %s&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\n&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;buffer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;main&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;argc&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;char&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;**&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;argv&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;c1&quot;&gt;// (...)&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;processData&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;input&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+  &lt;span class=&quot;c1&quot;&gt;// (...)&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;pre&gt;
+&lt;/pre&gt;
+
+&lt;p&gt;Let us take a closer look at what happens when a malicious input is passed. 
+The image below corresponds to the moment right before the data is copied into the array &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;buffer&lt;/code&gt;, through the function &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;strcpy&lt;/code&gt;.
+This function takes its arguments from the stack: the destination address is on the top (&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;0xffffcd60&lt;/code&gt;), and the source address is right after (&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;0xffffd0db&lt;/code&gt;).
+At the bottom of the picture, we can see the 64 bytes allocated for &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;buffer&lt;/code&gt;, starting at &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;0xffffcd60&lt;/code&gt;, 
+and a little further down, there is the address to return from &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;processData&lt;/code&gt; to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;main&lt;/code&gt;: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;0x565556a9&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p align=&quot;center&quot;&gt;
+&lt;img src=&quot;/assets/images/frida_blue_team/before_strcpy.png&quot; /&gt;
+&lt;/p&gt;
+
+&lt;pre&gt;
+&lt;/pre&gt;
+
+&lt;p&gt;The following image corresponds to the moment when the execution has just returned from &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;strcpy&lt;/code&gt; to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;main&lt;/code&gt;.
+As it can be observed, data has been copied beyond the 64 bytes that had been assigned, the buffer has been overflowed.
+As a result, the address to return from &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;processData&lt;/code&gt; to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;main&lt;/code&gt; has changed into &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;0xf7f5674b&lt;/code&gt;, which has been placed there by
+the attacker.&lt;/p&gt;
+
+&lt;p align=&quot;center&quot;&gt;
+&lt;img src=&quot;/assets/images/frida_blue_team/bof.png&quot; /&gt;
+&lt;/p&gt;
+
+&lt;pre&gt;
+&lt;/pre&gt;
+
+&lt;p&gt;At this point, the execution flow has been redirected, which might entail arbitrary code execution. 
+In the figure below, a shell with root privilege is shown, it was obtained as a result of the exploitation.&lt;/p&gt;
+
+&lt;p align=&quot;center&quot;&gt;
+&lt;img src=&quot;/assets/images/frida_blue_team/exploit.png&quot; /&gt;
+&lt;/p&gt;
+
+&lt;pre&gt;
+&lt;/pre&gt;
+
+&lt;p&gt;Let us now digress a little to explain the concept of dynamic instrumentation, before focusing on how
+it can help to thwart an exploit as the one we have just seen.&lt;/p&gt;
+
+&lt;h2 id=&quot;dynamic-binary-instrumentation&quot;&gt;Dynamic binary instrumentation&lt;/h2&gt;
+
+&lt;p&gt;Dynamic binary instrumentation can be defined as &lt;a href=&quot;https://www.cs.tufts.edu/comp/150PAT/tools/caliper/epic1.pdf&quot;&gt;the process of modifying the instructions of a binary 
+program while it executes&lt;/a&gt;.&lt;/p&gt;
+
+&lt;!-- RAMASAMY, Vinodha; HUNDT, Robert. Dynamic binary instrumentation on IA-64. En Proceedings of the First EPIC Workshop. 2001. --&gt;
+
+&lt;h3 id=&quot;frida&quot;&gt;Frida&lt;/h3&gt;
+&lt;p&gt;One of the most popular tools for DBI over the past few years is &lt;a href=&quot;https://frida.re/&quot;&gt;Frida&lt;/a&gt;. 
+It is used by developers, reverse-engineering professionals and security researchers.
+Frida is powerful, flexible and easy to use. We can work through scripts, it is multi-platform, free software and widely tested. 
+It is no coincidence that a large number of projects and tools have been developed on top of Frida, as it provides an excellent 
+base.&lt;/p&gt;
+
+&lt;h4 id=&quot;the-interceptor&quot;&gt;The Interceptor&lt;/h4&gt;
+&lt;p&gt;The Frida &lt;a href=&quot;https://frida.re/docs/javascript-api/#interceptor&quot;&gt;Interceptor&lt;/a&gt; allows, among other things, to set hooks 
+on functions and implement callbacks where we can specify actions to be carried out before and after the “hooked” function is executed.
+The actions to perform &lt;strong&gt;before&lt;/strong&gt; are defined in the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;onEnter&lt;/code&gt; callback, and the actions to perform &lt;strong&gt;after&lt;/strong&gt; are defined in the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;onLeave&lt;/code&gt; callback.&lt;/p&gt;
+
+&lt;p&gt;The Javascript code for using the Interceptor would have a structure as follows, where the target can be a function name or address:&lt;/p&gt;
+
+&lt;div class=&quot;language-js highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nx&quot;&gt;Interceptor&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;attach&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;target&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;onEnter&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;args&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;c1&quot;&gt;// actions to be carried out before executing the target function&lt;/span&gt;
+    &lt;span class=&quot;c1&quot;&gt;// (...)&lt;/span&gt;
+  &lt;span class=&quot;p&quot;&gt;},&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;onLeave&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;retval&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;c1&quot;&gt;// actions to be carried out after the execution of the target function&lt;/span&gt;
+    &lt;span class=&quot;c1&quot;&gt;// (...)&lt;/span&gt;
+  &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;});&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;pre&gt;
+&lt;/pre&gt;
+
+&lt;p&gt;This magic is possible thanks to a mechanism called “trampoline”. Explained in a few words, it simply consists in replacing the
+first instructions of the target function by others to jump into a controlled area where to jump to 
+specific areas of injected code and, at the end, place
+the removed instructions and jump back to the function code:&lt;/p&gt;
+
+&lt;p align=&quot;center&quot;&gt;
+&lt;img src=&quot;/assets/images/frida_blue_team/frida_interceptor_trampoline.png&quot; /&gt;
+&lt;/p&gt;
+
+&lt;pre&gt;
+&lt;/pre&gt;
+
+&lt;p&gt;Now we are ready to go for the interesting part! :)&lt;/p&gt;
+
+&lt;h2 id=&quot;shielding-the-return-address&quot;&gt;Shielding the return address&lt;/h2&gt;
+
+&lt;p&gt;Let us get back to the moment when the first instruction of the function &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;strcpy&lt;/code&gt; is going to be executed. 
+At this point, the address to return from &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;strcpy&lt;/code&gt; to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;processData&lt;/code&gt; (&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;0x5655560f&lt;/code&gt;) is on the top of the stack.
+A few positions further down, there is the address to return from &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;processData&lt;/code&gt; to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;main&lt;/code&gt; (&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;0x565556a9&lt;/code&gt;).
+Note that no instruction from &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;strcpy&lt;/code&gt; has been executed yet; thus, the register &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;EBP&lt;/code&gt; is still pointing to the
+base of the stack frame for &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;processData&lt;/code&gt;, this is, right on top of the address to return to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;main&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p align=&quot;center&quot;&gt;
+&lt;img src=&quot;/assets/images/frida_blue_team/algo_hook_01.png&quot; /&gt;
+&lt;/p&gt;
+
+&lt;pre&gt;
+&lt;/pre&gt;
+
+&lt;p&gt;We we discussed above about the concept of buffer overflow, we differentiated between two key moments: 
+(1) the instant before &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;strcpy&lt;/code&gt; was executed, and (2) right afterwards. 
+These two moments are depicted in the following image: at the top, before executing &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;strcpy&lt;/code&gt;; 
+at the bottom, after executing &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;strcpy&lt;/code&gt;. 
+Note that, in the former case, the address to return to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;main&lt;/code&gt; is the legitimate one (&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;0x565556a9&lt;/code&gt;); whereas in the latter case, 
+the address has been altered by the exploit (&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;0xf7f568ab&lt;/code&gt;). How could we avoid this? If it were possible for us to , somehow, 
+do actions at these two precise moments, we could first read the 4 bytes of the return address, stored at &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;0xffffcd9c&lt;/code&gt;, 
+and read it again in the second moment. If the two read values were different, we would have detected the buffer overflow 
+and we could abort the execution of the program. 
+Regarding the address where the address to return to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;main&lt;/code&gt; is stored, this could be obtained from the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;EBP&lt;/code&gt; register, since it points to 
+the 4 bytes preceding the return address.&lt;/p&gt;
+
+&lt;p align=&quot;center&quot;&gt;
+&lt;img src=&quot;/assets/images/frida_blue_team/algo_hook_02.png&quot; /&gt;
+&lt;/p&gt;
+
+&lt;pre&gt;
+&lt;/pre&gt;
+
+&lt;p&gt;So we have two moments where we would like to act… Is that even possible? If we recall what we have seen about Frida and the Interceptor, we will
+realize that it is. The Interceptor gives us the opportunity to take action before and after the execution of the “hooked” function, 
+which can be done by writing out code within the callbacks &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;onEnter&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;onLeave&lt;/code&gt;, respectively.&lt;/p&gt;
+
+&lt;p&gt;The snippet below shows a minimalist implementation of the algorithm:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;In the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;onEnter&lt;/code&gt; block, the address where the address to return to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;main&lt;/code&gt; is located is referred to as &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;this.callerRetAddrPtr&lt;/code&gt;. It is obtained from the register &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;EBP&lt;/code&gt;, 
+as it is placed 4 bytes after. This address was represented as &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;&amp;amp;a&lt;/code&gt; in the previous image. Next, if we dereference the pointer &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;this.callerRetAddrPtr&lt;/code&gt;, 
+we obtain the address to return to main, which is stored in the variable &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;this.originalCallerRetAddr&lt;/code&gt;.&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;In the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;onLeave&lt;/code&gt; block, the pointer &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;this.callerRetAddrPtr&lt;/code&gt; is again dereferenced and the value obtained, 
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;callerRetAddrBeforeRet&lt;/code&gt;, is compared with the value of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;this.originalCallerRetAddr&lt;/code&gt;.
+If they differ, a buffer overflow has been detected and the execution can be aborted.&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;pre&gt;
+&lt;/pre&gt;
+
+&lt;div class=&quot;language-js highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nx&quot;&gt;Interceptor&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;attach&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;Module&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;getExportByName&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kc&quot;&gt;null&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;strcpy&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;onEnter&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;args&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;callerRetAddrPtr&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;context&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;ebp&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;add&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;4&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;originalCallerRetAddr&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;Memory&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;readPointer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;callerRetAddrPtr&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+  &lt;span class=&quot;p&quot;&gt;},&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;onLeave&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;retval&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;callerRetAddrBeforeRet&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;Memory&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;readPointer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;callerRetAddrPtr&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;originalCallerRetAddr&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;toString&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;!==&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;callerRetAddrBeforeRet&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;toString&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;())&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+      &lt;span class=&quot;c1&quot;&gt;// abort&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+  &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;});&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;pre&gt;
+&lt;/pre&gt;
+
+&lt;p&gt;In the picture below, we can observe how the application of this strategy results in the neutralization of the exploit, which does not return a shell.&lt;/p&gt;
+
+&lt;p align=&quot;center&quot;&gt;
+&lt;img src=&quot;/assets/images/frida_blue_team/exploitation_prevention.png&quot; /&gt;
+&lt;/p&gt;
+
+&lt;h2 id=&quot;what-else&quot;&gt;What else?&lt;/h2&gt;
+
+&lt;p&gt;If you feel like playing with this PoC, you can check out the git repository &lt;a href=&quot;https://github.com/ardgeor/retShield&quot;&gt;retShield&lt;/a&gt;.&lt;/p&gt;</content><author><name>Gerardo Pinar Loriente</name></author><category term="Frida" /><category term="Dynamic instrumentation" /><category term="Exploiting" /><category term="Stack buffer overflow" /><category term="Defence" /><summary type="html">Let's see how to protect a vulnerable binary against stack buffer overflow attacks through dynamic instrumentation.</summary></entry><entry><title type="html">Why you should also protect the integrity of the native libraries</title><link href="http://0.0.0.0:4000/abusing-shared-object-in-android-applications/" rel="alternate" type="text/html" title="Why you should also protect the integrity of the native libraries" /><published>2023-01-16T00:00:00+00:00</published><updated>2023-01-16T00:00:00+00:00</updated><id>http://0.0.0.0:4000/abusing-shared-object-in-android-applications</id><content type="html" xml:base="http://0.0.0.0:4000/abusing-shared-object-in-android-applications/">&lt;!-- &lt;p align=&quot;center&quot;&gt;
 &lt;img src=&quot;/assets/images/abusing_shared_object/cover.png&quot;&gt;
 &lt;/p&gt; --&gt;
 
@@ -227,7 +431,7 @@ then derive the button that was pressed.&lt;/p&gt;
 &lt;img src=&quot;/assets/images/abusing_shared_object/not_visible.png&quot; /&gt;
 &lt;/p&gt;
 
-&lt;p&gt;If the position of the buttons is static, we can just superimpose a template of the PIN pad on the screen capture, and we get obtain the button that was pressed. 
+&lt;p&gt;If the position of the buttons is static, we can just superimpose a template of the PIN pad on the screen capture, and we obtain the button that was pressed. 
 Or we can directly infer it from the screen capture :)&lt;/p&gt;
 
 &lt;p align=&quot;center&quot;&gt;
@@ -328,7 +532,7 @@ Namely, absence of integrity checks on the shared objects (*.so), and absence of
 (just a check on the developer options is not enough!).&lt;/p&gt;
   &lt;/li&gt;
   &lt;li&gt;
-    &lt;p&gt;The attack require a shell session as root. Actions will be carried out when the target application is not in use, so no need to worry about security checks (depending on how root has been obtained).&lt;/p&gt;
+    &lt;p&gt;The attack requires a shell session as root. Actions will be carried out when the target application is not in use, so no need to worry about security checks (depending on how root has been obtained).&lt;/p&gt;
   &lt;/li&gt;
   &lt;li&gt;Depending on the exact case (see the different cases discussed above), different additional requirements would be needed for the attack to be applicable:
     &lt;ul&gt;

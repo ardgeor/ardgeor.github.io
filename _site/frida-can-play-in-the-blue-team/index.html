@@ -1,0 +1,641 @@
+<!doctype html>
+<!--
+  Minimal Mistakes Jekyll Theme 4.15.1 by Michael Rose
+  Copyright 2013-2019 Michael Rose - mademistakes.com | @mmistakes
+  Free for personal and commercial use under the MIT license
+  https://github.com/mmistakes/minimal-mistakes/blob/master/LICENSE
+-->
+<html lang="en" class="no-js">
+  <head>
+    <meta charset="utf-8">
+
+<!-- begin _includes/seo.html --><title>When Frida plays in the blue team - Ardgeor’s</title>
+<meta name="description" content="Let’s see how to protect a vulnerable binary against stack buffer overflow attacks through dynamic instrumentation.">
+
+
+
+<meta property="og:type" content="article">
+<meta property="og:locale" content="en_US">
+<meta property="og:site_name" content="Ardgeor's">
+<meta property="og:title" content="When Frida plays in the blue team">
+<meta property="og:url" content="http://0.0.0.0:4000/frida-can-play-in-the-blue-team/">
+
+
+  <meta property="og:description" content="Let’s see how to protect a vulnerable binary against stack buffer overflow attacks through dynamic instrumentation.">
+
+
+
+
+
+
+
+  <meta property="article:published_time" content="2023-02-28T00:00:00+00:00">
+
+
+
+
+
+  
+
+  
+
+
+<link rel="canonical" href="http://0.0.0.0:4000/frida-can-play-in-the-blue-team/">
+
+
+
+
+
+
+
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Person",
+      "name": "Ardgeor",
+      "url": "http://0.0.0.0:4000",
+      "sameAs": null
+    }
+  </script>
+
+
+
+
+
+
+
+<!-- end _includes/seo.html -->
+
+
+<link href="/feed.xml" type="application/atom+xml" rel="alternate" title="Ardgeor's Feed">
+
+<!-- https://t.co/dKP3o1e -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script>
+  document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
+</script>
+
+<!-- For all browsers -->
+<link rel="stylesheet" href="/assets/css/main.css">
+
+<!--[if IE ]>
+  <style>
+    /* old IE unsupported flexbox fixes */
+    .greedy-nav .site-title {
+      padding-right: 3em;
+    }
+    .greedy-nav button {
+      position: absolute;
+      top: 0;
+      right: 0;
+      height: 100%;
+    }
+  </style>
+<![endif]-->
+
+
+
+    <!-- start custom head snippets -->
+
+<!-- insert favicons. use https://realfavicongenerator.net/ -->
+
+<!-- end custom head snippets -->
+
+  </head>
+
+  <body class="layout--single wide">
+
+    <!--[if lt IE 9]>
+<div class="notice--danger align-center" style="margin: 0;">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience.</div>
+<![endif]-->
+
+    
+
+<div class="masthead">
+  <div class="masthead__inner-wrap">
+    <div class="masthead__menu">
+      <nav id="site-nav" class="greedy-nav">
+                
+        <ul class="visible-links"><li class="masthead__menu-item">
+              <a href="/" >Home</a>
+            </li><li class="masthead__menu-item">
+              <a href="/year-archive/" >Articles</a>
+            </li><li class="masthead__menu-item">
+              <a href="/categories/" >Categories</a>
+            </li><li class="masthead__menu-item">
+              <a href="/tags/" >Tags</a>
+            </li><li class="masthead__menu-item">
+              <a href="/search/" >Search</a>
+            </li></ul>
+        
+        <button class="greedy-nav__toggle hidden" type="button">
+          <span class="visually-hidden">Toggle menu</span>
+          <div class="navicon"></div>
+        </button>
+        <ul class="hidden-links hidden"></ul>
+      </nav>
+    </div>
+  </div>
+</div>
+    
+
+    <div class="initial-content">
+      
+
+
+  
+    
+
+
+
+<nav class="breadcrumbs">
+  <ol itemscope itemtype="https://schema.org/BreadcrumbList">
+    
+    
+    
+      
+        <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+          <a href="http://0.0.0.0:4000/" itemprop="item"><span itemprop="name">Home</span></a>
+          <meta itemprop="position" content="1" />
+        </li>
+        <span class="sep">/</span>
+      
+      
+        <li class="current">When Frida plays in the blue team</li>
+      
+    
+  </ol>
+</nav>
+
+  
+
+
+<div id="main" role="main">
+  
+  <div class="sidebar sticky">
+  
+
+
+<div itemscope itemtype="https://schema.org/Person">
+
+  
+    <div class="author__avatar">
+      
+
+      
+        <img src="/assets/images/avatar.png" alt="Gerardo Pinar Loriente" itemprop="image">
+      
+    </div>
+  
+
+  <div class="author__content">
+    
+      <h3 class="author__name" itemprop="name">Gerardo Pinar Loriente</h3>
+    
+    
+      <p class="author__bio" itemprop="description">
+        Security Engineer
+      </p>
+    
+  </div>
+
+  <div class="author__urls-wrapper">
+    <button class="btn btn--inverse">Follow</button>
+    <ul class="author__urls social-icons">
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+        <li>
+          <a href="https://www.linkedin.com/in/gerardo-pinar-loriente-5b6384b5" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-linkedin" aria-hidden="true"></i> LinkedIn
+          </a>
+        </li>
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+        <li>
+          <a href="https://github.com/ardgeor" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-github" aria-hidden="true"></i> GitHub
+          </a>
+        </li>
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      <!--
+  <li>
+    <a href="http://link-to-whatever-social-network.com/user/" itemprop="sameAs" rel="nofollow noopener noreferrer">
+      <i class="fas fa-fw" aria-hidden="true"></i> Custom Social Profile Link
+    </a>
+  </li>
+-->
+    </ul>
+  </div>
+</div>
+
+  
+  </div>
+
+
+  <article class="page" itemscope itemtype="https://schema.org/CreativeWork">
+    <meta itemprop="headline" content="When Frida plays in the blue team">
+    <meta itemprop="description" content="Let’s see how to protect a vulnerable binary against stack buffer overflow attacks through dynamic instrumentation.">
+    <meta itemprop="datePublished" content="February 28, 2023">
+    
+
+    <div class="page__inner-wrap">
+      
+        <header>
+          <h1 id="page-title" class="page__title" itemprop="headline">When Frida plays in the blue team
+</h1>
+          
+        </header>
+      
+
+      <section class="page__content" itemprop="text">
+        
+        <p class="page__meta">
+          
+            <i class="fa fa-fw fa-calendar" aria-hidden="true"></i> <time datetime="2023-02-28T00:00:00+00:00">February 28, 2023 </time>&emsp;
+          
+          
+        </p>
+        <!-- <p align="center">
+<img src="/assets/images/abusing_shared_object/cover.png">
+</p> -->
+
+<p><a href="https://eniit.es/defendiendose-de-exploits-de-desbordamiento-de-buffer/">Pincha aquí para ver el artículo en español</a></p>
+
+<h2 id="introduction">Introduction</h2>
+
+<p>We are used to see Frida as a valuable allied when we are on the attacker’s side. But Frida also happens to be a powerful partner when it comes to defending.
+This article is about stack buffer overflow, a problem with a lot of history which is not past yet. 
+Attack and defense methods have been competing for over 40 years, becoming more and more sophisticated: 
+canaries, data execution prevention (DEP), return-oriented programming (ROP), address space layout randomization (ASLR), etc.</p>
+
+<p>Now let’s see one of the methods in which dynamic binary instrumentation (DBI) can help protect a vulnerable program.</p>
+
+<h2 id="stack-buffer-overflow">Stack buffer overflow</h2>
+
+<p>The stack buffer overflow problem appears whenever bytes are copied into a buffer with a limited size <strong>without having control on how many bytes are actually copied</strong>.
+In the snippet below, the function <code class="language-plaintext highlighter-rouge">main</code> receives data from the command line and passes it to the function <code class="language-plaintext highlighter-rouge">processData</code>, where the data is copied into the local variable
+<code class="language-plaintext highlighter-rouge">buffer</code>. This variable corresponds to an array of 64 characters. Since <code class="language-plaintext highlighter-rouge">buffer</code> is a local variable, it lives in the stack.</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">void</span> <span class="nf">processData</span><span class="p">(</span><span class="kt">char</span> <span class="o">*</span><span class="n">data</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kt">char</span> <span class="n">buffer</span><span class="p">[</span><span class="mi">64</span><span class="p">];</span>
+  <span class="n">strcpy</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span> <span class="n">data</span><span class="p">);</span> <span class="c1">// &lt;---------------- BoF!</span>
+  <span class="n">printf</span><span class="p">(</span><span class="s">"Data processed: %s</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">buffer</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="kt">char</span><span class="o">**</span> <span class="n">argv</span><span class="p">)</span> <span class="p">{</span>
+  <span class="c1">// (...)</span>
+  <span class="n">processData</span><span class="p">(</span><span class="n">input</span><span class="p">);</span>
+  <span class="c1">// (...)</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<pre>
+</pre>
+
+<p>Let us take a closer look at what happens when a malicious input is passed. 
+The image below corresponds to the moment right before the data is copied into the array <code class="language-plaintext highlighter-rouge">buffer</code>, through the function <code class="language-plaintext highlighter-rouge">strcpy</code>.
+This function takes its arguments from the stack: the destination address is on the top (<code class="language-plaintext highlighter-rouge">0xffffcd60</code>), and the source address is right after (<code class="language-plaintext highlighter-rouge">0xffffd0db</code>).
+At the bottom of the picture, we can see the 64 bytes allocated for <code class="language-plaintext highlighter-rouge">buffer</code>, starting at <code class="language-plaintext highlighter-rouge">0xffffcd60</code>, 
+and a little further down, there is the address to return from <code class="language-plaintext highlighter-rouge">processData</code> to <code class="language-plaintext highlighter-rouge">main</code>: <code class="language-plaintext highlighter-rouge">0x565556a9</code>.</p>
+
+<p align="center">
+<img src="/assets/images/frida_blue_team/before_strcpy.png" />
+</p>
+
+<pre>
+</pre>
+
+<p>The following image corresponds to the moment when the execution has just returned from <code class="language-plaintext highlighter-rouge">strcpy</code> to <code class="language-plaintext highlighter-rouge">main</code>.
+As it can be observed, data has been copied beyond the 64 bytes that had been assigned, the buffer has been overflowed.
+As a result, the address to return from <code class="language-plaintext highlighter-rouge">processData</code> to <code class="language-plaintext highlighter-rouge">main</code> has changed into <code class="language-plaintext highlighter-rouge">0xf7f5674b</code>, which has been placed there by
+the attacker.</p>
+
+<p align="center">
+<img src="/assets/images/frida_blue_team/bof.png" />
+</p>
+
+<pre>
+</pre>
+
+<p>At this point, the execution flow has been redirected, which might entail arbitrary code execution. 
+In the figure below, a shell with root privilege is shown, it was obtained as a result of the exploitation.</p>
+
+<p align="center">
+<img src="/assets/images/frida_blue_team/exploit.png" />
+</p>
+
+<pre>
+</pre>
+
+<p>Let us now digress a little to explain the concept of dynamic instrumentation, before focusing on how
+it can help to thwart an exploit as the one we have just seen.</p>
+
+<h2 id="dynamic-binary-instrumentation">Dynamic binary instrumentation</h2>
+
+<p>Dynamic binary instrumentation can be defined as <a href="https://www.cs.tufts.edu/comp/150PAT/tools/caliper/epic1.pdf">the process of modifying the instructions of a binary 
+program while it executes</a>.</p>
+
+<!-- RAMASAMY, Vinodha; HUNDT, Robert. Dynamic binary instrumentation on IA-64. En Proceedings of the First EPIC Workshop. 2001. -->
+
+<h3 id="frida">Frida</h3>
+<p>One of the most popular tools for DBI over the past few years is <a href="https://frida.re/">Frida</a>. 
+It is used by developers, reverse-engineering professionals and security researchers.
+Frida is powerful, flexible and easy to use. We can work through scripts, it is multi-platform, free software and widely tested. 
+It is no coincidence that a large number of projects and tools have been developed on top of Frida, as it provides an excellent 
+base.</p>
+
+<h4 id="the-interceptor">The Interceptor</h4>
+<p>The Frida <a href="https://frida.re/docs/javascript-api/#interceptor">Interceptor</a> allows, among other things, to set hooks 
+on functions and implement callbacks where we can specify actions to be carried out before and after the “hooked” function is executed.
+The actions to perform <strong>before</strong> are defined in the <code class="language-plaintext highlighter-rouge">onEnter</code> callback, and the actions to perform <strong>after</strong> are defined in the <code class="language-plaintext highlighter-rouge">onLeave</code> callback.</p>
+
+<p>The Javascript code for using the Interceptor would have a structure as follows, where the target can be a function name or address:</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">Interceptor</span><span class="p">.</span><span class="nx">attach</span><span class="p">(</span><span class="nx">target</span><span class="p">,</span> <span class="p">{</span>
+  <span class="nx">onEnter</span><span class="p">(</span><span class="nx">args</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// actions to be carried out before executing the target function</span>
+    <span class="c1">// (...)</span>
+  <span class="p">},</span>
+  <span class="nx">onLeave</span> <span class="p">(</span><span class="nx">retval</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// actions to be carried out after the execution of the target function</span>
+    <span class="c1">// (...)</span>
+  <span class="p">}</span>
+<span class="p">});</span>
+</code></pre></div></div>
+<pre>
+</pre>
+
+<p>This magic is possible thanks to a mechanism called “trampoline”. Explained in a few words, it simply consists in replacing the
+first instructions of the target function by others to jump into a controlled area where to jump to 
+specific areas of injected code and, at the end, place
+the removed instructions and jump back to the function code:</p>
+
+<p align="center">
+<img src="/assets/images/frida_blue_team/frida_interceptor_trampoline.png" />
+</p>
+
+<pre>
+</pre>
+
+<p>Now we are ready to go for the interesting part! :)</p>
+
+<h2 id="shielding-the-return-address">Shielding the return address</h2>
+
+<p>Let us get back to the moment when the first instruction of the function <code class="language-plaintext highlighter-rouge">strcpy</code> is going to be executed. 
+At this point, the address to return from <code class="language-plaintext highlighter-rouge">strcpy</code> to <code class="language-plaintext highlighter-rouge">processData</code> (<code class="language-plaintext highlighter-rouge">0x5655560f</code>) is on the top of the stack.
+A few positions further down, there is the address to return from <code class="language-plaintext highlighter-rouge">processData</code> to <code class="language-plaintext highlighter-rouge">main</code> (<code class="language-plaintext highlighter-rouge">0x565556a9</code>).
+Note that no instruction from <code class="language-plaintext highlighter-rouge">strcpy</code> has been executed yet; thus, the register <code class="language-plaintext highlighter-rouge">EBP</code> is still pointing to the
+base of the stack frame for <code class="language-plaintext highlighter-rouge">processData</code>, this is, right on top of the address to return to <code class="language-plaintext highlighter-rouge">main</code>.</p>
+
+<p align="center">
+<img src="/assets/images/frida_blue_team/algo_hook_01.png" />
+</p>
+
+<pre>
+</pre>
+
+<p>We we discussed above about the concept of buffer overflow, we differentiated between two key moments: 
+(1) the instant before <code class="language-plaintext highlighter-rouge">strcpy</code> was executed, and (2) right afterwards. 
+These two moments are depicted in the following image: at the top, before executing <code class="language-plaintext highlighter-rouge">strcpy</code>; 
+at the bottom, after executing <code class="language-plaintext highlighter-rouge">strcpy</code>. 
+Note that, in the former case, the address to return to <code class="language-plaintext highlighter-rouge">main</code> is the legitimate one (<code class="language-plaintext highlighter-rouge">0x565556a9</code>); whereas in the latter case, 
+the address has been altered by the exploit (<code class="language-plaintext highlighter-rouge">0xf7f568ab</code>). How could we avoid this? If it were possible for us to , somehow, 
+do actions at these two precise moments, we could first read the 4 bytes of the return address, stored at <code class="language-plaintext highlighter-rouge">0xffffcd9c</code>, 
+and read it again in the second moment. If the two read values were different, we would have detected the buffer overflow 
+and we could abort the execution of the program. 
+Regarding the address where the address to return to <code class="language-plaintext highlighter-rouge">main</code> is stored, this could be obtained from the <code class="language-plaintext highlighter-rouge">EBP</code> register, since it points to 
+the 4 bytes preceding the return address.</p>
+
+<p align="center">
+<img src="/assets/images/frida_blue_team/algo_hook_02.png" />
+</p>
+
+<pre>
+</pre>
+
+<p>So we have two moments where we would like to act… Is that even possible? If we recall what we have seen about Frida and the Interceptor, we will
+realize that it is. The Interceptor gives us the opportunity to take action before and after the execution of the “hooked” function, 
+which can be done by writing out code within the callbacks <code class="language-plaintext highlighter-rouge">onEnter</code> and <code class="language-plaintext highlighter-rouge">onLeave</code>, respectively.</p>
+
+<p>The snippet below shows a minimalist implementation of the algorithm:</p>
+
+<ul>
+  <li>
+    <p>In the <code class="language-plaintext highlighter-rouge">onEnter</code> block, the address where the address to return to <code class="language-plaintext highlighter-rouge">main</code> is located is referred to as <code class="language-plaintext highlighter-rouge">this.callerRetAddrPtr</code>. It is obtained from the register <code class="language-plaintext highlighter-rouge">EBP</code>, 
+as it is placed 4 bytes after. This address was represented as <code class="language-plaintext highlighter-rouge">&amp;a</code> in the previous image. Next, if we dereference the pointer <code class="language-plaintext highlighter-rouge">this.callerRetAddrPtr</code>, 
+we obtain the address to return to main, which is stored in the variable <code class="language-plaintext highlighter-rouge">this.originalCallerRetAddr</code>.</p>
+  </li>
+  <li>
+    <p>In the <code class="language-plaintext highlighter-rouge">onLeave</code> block, the pointer <code class="language-plaintext highlighter-rouge">this.callerRetAddrPtr</code> is again dereferenced and the value obtained, 
+<code class="language-plaintext highlighter-rouge">callerRetAddrBeforeRet</code>, is compared with the value of <code class="language-plaintext highlighter-rouge">this.originalCallerRetAddr</code>.
+If they differ, a buffer overflow has been detected and the execution can be aborted.</p>
+  </li>
+</ul>
+
+<pre>
+</pre>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">Interceptor</span><span class="p">.</span><span class="nx">attach</span><span class="p">(</span><span class="nx">Module</span><span class="p">.</span><span class="nx">getExportByName</span><span class="p">(</span><span class="kc">null</span><span class="p">,</span> <span class="dl">'</span><span class="s1">strcpy</span><span class="dl">'</span><span class="p">),</span> <span class="p">{</span>
+  <span class="nx">onEnter</span><span class="p">(</span><span class="nx">args</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">callerRetAddrPtr</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">context</span><span class="p">.</span><span class="nx">ebp</span><span class="p">.</span><span class="nx">add</span><span class="p">(</span><span class="mi">4</span><span class="p">);</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">originalCallerRetAddr</span> <span class="o">=</span> <span class="nx">Memory</span><span class="p">.</span><span class="nx">readPointer</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">callerRetAddrPtr</span><span class="p">);</span>
+  <span class="p">},</span>
+  <span class="nx">onLeave</span> <span class="p">(</span><span class="nx">retval</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">callerRetAddrBeforeRet</span> <span class="o">=</span> <span class="nx">Memory</span><span class="p">.</span><span class="nx">readPointer</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">callerRetAddrPtr</span><span class="p">);</span>
+    <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">originalCallerRetAddr</span><span class="p">.</span><span class="nx">toString</span><span class="p">()</span> <span class="o">!==</span> <span class="nx">callerRetAddrBeforeRet</span><span class="p">.</span><span class="nx">toString</span><span class="p">())</span> <span class="p">{</span>
+      <span class="c1">// abort</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">});</span>
+</code></pre></div></div>
+<pre>
+</pre>
+
+<p>In the picture below, we can observe how the application of this strategy results in the neutralization of the exploit, which does not return a shell.</p>
+
+<p align="center">
+<img src="/assets/images/frida_blue_team/exploitation_prevention.png" />
+</p>
+
+<h2 id="what-else">What else?</h2>
+
+<p>If you feel like playing with this PoC, you can check out the git repository <a href="https://github.com/ardgeor/retShield">retShield</a>.</p>
+
+
+        
+      </section>
+
+      <footer class="page__meta">
+        
+        
+  
+
+
+  
+  
+  
+
+  <p class="page__taxonomy">
+    <strong><i class="fas fa-fw fa-tags" aria-hidden="true"></i> Tags: </strong>
+    <span itemprop="keywords">
+    
+      
+      
+      <a href="/tags/#defence" class="page__taxonomy-item" rel="tag">Defence</a><span class="sep">, </span>
+    
+      
+      
+      <a href="/tags/#dynamic-instrumentation" class="page__taxonomy-item" rel="tag">Dynamic instrumentation</a><span class="sep">, </span>
+    
+      
+      
+      <a href="/tags/#exploiting" class="page__taxonomy-item" rel="tag">Exploiting</a><span class="sep">, </span>
+    
+      
+      
+      <a href="/tags/#frida" class="page__taxonomy-item" rel="tag">Frida</a><span class="sep">, </span>
+    
+      
+      
+      <a href="/tags/#stack-buffer-overflow" class="page__taxonomy-item" rel="tag">Stack buffer overflow</a>
+    
+    </span>
+  </p>
+
+
+
+
+  
+
+
+  
+  
+  
+
+  <p class="page__taxonomy">
+    <strong><i class="fas fa-fw fa-folder-open" aria-hidden="true"></i> Categories: </strong>
+    <span itemprop="keywords">
+    
+      
+      
+      <a href="/categories/#exploitation" class="page__taxonomy-item" rel="tag">Exploitation</a>
+    
+    </span>
+  </p>
+
+
+        
+          <p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Fecha:</strong> <time datetime="2023-02-28T00:00:00+00:00">February 28, 2023</time></p>
+        
+      </footer>
+
+      
+
+      
+  <nav class="pagination">
+    
+      <a href="/abusing-shared-object-in-android-applications/" class="pagination--pager" title="Why you should also protect the integrity of the native libraries
+">Previous</a>
+    
+    
+      <a href="#" class="pagination--pager disabled">Next</a>
+    
+  </nav>
+
+    </div>
+
+    
+  </article>
+
+  
+</div>
+
+    </div>
+
+    
+
+    <div class="page__footer">
+      <footer>
+        <!-- start custom footer snippets -->
+
+<!-- end custom footer snippets -->
+        <div class="page__footer-follow">
+  <ul class="social-icons">
+    
+
+    
+
+    <li><a href="/feed.xml"><i class="fas fa-fw fa-rss-square" aria-hidden="true"></i> Feed</a></li>
+  </ul>
+</div>
+
+<div class="page__footer-copyright">&copy; 2023 Ardgeor</div>
+
+      </footer>
+    </div>
+
+    
+  <script src="/assets/js/main.min.js"></script>
+  <script data-search-pseudo-elements defer src="https://use.fontawesome.com/releases/v5.7.1/js/all.js" integrity="sha384-eVEQC9zshBn0rFj4+TU78eNA19HMNigMviK/PU/FFjLXqa/GKPgX58rvt5Z8PLs7" crossorigin="anonymous"></script>
+
+
+
+
+
+
+
+
+  </body>
+</html>
